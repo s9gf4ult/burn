@@ -19,7 +19,12 @@ library
   hs-source-dirs: src
   ghc-options: -Wall
   exposed-modules: Burn.State
-  build-depends: base                        
+  build-depends: base
+               , lens
+               , text
+               , time
+  default-extensions: MultiWayIf
+                    , TemplateHaskell
 
 executable burn
   hs-source-dirs:      bin
