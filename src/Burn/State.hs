@@ -36,12 +36,13 @@ data PomodoroData = PomodoroData
 
 data Action
   = SavePomodoro PomodoroData
-  | PomodoroStop
-  | PauseStop
+  | NotifyPomodoroFinished
+  | NotifyPauseFinished
 
 data Settings = Settings
   { _sPomodoroLen :: NominalDiffTime
-  , _sPauseLen :: NominalDiffTime
+  , _sPauseLen    :: NominalDiffTime
+  , _sLongPause   :: NominalDiffTime
   }
 
 makeLenses ''Settings
@@ -51,29 +52,51 @@ handle :: Settings -> Message -> Burn -> (Burn, [Action])
 handle s (Message time evt) burn = case evt of
   Tick -> case burn of
     StartPos -> (StartPos, [])
-    PomCounting c -> tickCount PomCounting PomodoroStop c
-    PauseCounting c -> tickCount PauseCounting PauseStop c
+    PomCounting c -> tickCount PomCounting NotifyPomodoroFinished c
+    PauseCounting c -> tickCount PauseCounting NotifyPauseFinished c
   StartPomodoro -> case burn of
     StartPos ->
-      let res = PomCounting $ Counting
-            { _cStarted = time
-            , _cLen = s ^. sPomodoroLen
-            , _cFinished = False
-            }
+      let
+        res = PomCounting $ Counting
+          { _cStarted = time
+          , _cLen = s ^. sPomodoroLen
+          , _cFinished = False }
       in (res, [])
     PomCounting c -> (PomCounting c, [])
     PauseCounting c ->
       let
         passed = diffUTCTime time $ c ^. cStarted
-        pomLen =
-          if passed >= (c ^. cLen)
-          then s ^. sPomodoroLen
-          else (s ^. sPomodoroLen) * passed / (c ^. cLen)
+        pomLen = min (s ^. sPomodoroLen)
+          $ (s ^. sPomodoroLen) * passed / (c ^. cLen)
         newC = Counting
           { _cLen      = pomLen
           , _cStarted  = time
           , _cFinished = False }
       in (PomCounting newC, [])
+  StartPause -> case burn of
+    StartPos ->
+      let
+        res = PauseCounting $ Counting
+          { _cStarted = time
+          , _cLen = s ^. sPauseLen
+          , _cFinished = False }
+      in (res, [])
+    PomCounting c ->
+      let
+        passed = diffUTCTime time $ c ^. cStarted
+        pauseLen = min (s ^. sLongPause)
+          $ (s ^. sPauseLen) * passed / (s ^. sPomodoroLen)
+        newC = Counting
+          { _cStarted = time
+          , _cLen = pauseLen
+          , _cFinished = False }
+        tags = (error "FIXME: ")
+        pomodoro = PomodoroData
+          { _pdStarted = c ^. cStarted
+          , _pdLen = passed
+          , _pdTags = tags }
+      in (PauseCounting newC, [SavePomodoro pomodoro])
+    PauseCounting c -> (PauseCounting c, [])
   where
     tickCount up stopAction c =
       let

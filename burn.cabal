@@ -28,6 +28,7 @@ library
 
 executable burn
   hs-source-dirs:      bin
+  ghc-options: -Wall -threaded
   main-is:             Main.hs
   default-language:    Haskell2010
   build-depends:       base >= 4.7 && < 5
