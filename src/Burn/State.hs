@@ -9,7 +9,7 @@ data Counting = Counting
   , _cStarted  :: UTCTime
   , _cFinished :: Bool
     -- ^ True when stop action is sent
-  }
+  } deriving (Show)
 
 makeLenses ''Counting
 
@@ -22,24 +22,26 @@ data Burn
   | PauseCounting
     { _bCounting :: Counting
     }
+  deriving (Show)
 
 makeLenses ''Burn
 
 data State = State
   { _sTags :: [Text]
   , _sBurn :: Burn
-  }
+  } deriving (Show)
 
 data Event
   = Tick
   | StartPomodoro
   | StartPause
   | SetTags [Text]
+  deriving (Show)
 
 data Message = Message
   { _mTime   :: UTCTime
   , _mAction :: Event
-  }
+  } deriving (Show)
 
 makeLenses ''Message
 
@@ -47,18 +49,19 @@ data PomodoroData = PomodoroData
   { _pdStarted :: UTCTime
   , _pdLen     :: NominalDiffTime
   , _pdTags    :: [Text]
-  }
+  } deriving (Show)
 
 data Action
   = SavePomodoro PomodoroData
   | NotifyPomodoroFinished
   | NotifyPauseFinished
+  deriving (Show)
 
 data Settings = Settings
   { _sPomodoroLen :: NominalDiffTime
   , _sPauseLen    :: NominalDiffTime
   , _sLongPause   :: NominalDiffTime
-  }
+  } deriving (Show)
 
 makeLenses ''Settings
 
