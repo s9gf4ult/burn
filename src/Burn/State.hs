@@ -35,6 +35,8 @@ data State = State
   , _sBurn :: Burn
   } deriving (Show)
 
+makeLenses ''State
+
 instance Default State where
   def = State [] def
 
@@ -57,6 +59,8 @@ data PomodoroData = PomodoroData
   , _pdLen     :: NominalDiffTime
   , _pdTags    :: [Text]
   } deriving (Show)
+
+makeLenses ''PomodoroData
 
 data Action
   = SavePomodoro PomodoroData
