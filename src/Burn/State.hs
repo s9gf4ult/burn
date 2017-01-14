@@ -26,8 +26,8 @@ data Burn
 makeLenses ''Burn
 
 data State = State
-  { _sBurn :: Burn
-  , _sTags :: [Text]
+  { _sTags :: [Text]
+  , _sBurn :: Burn
   }
 
 data Event
@@ -64,14 +64,11 @@ makeLenses ''Settings
 
 -- | Handles message and transforms state
 handle :: Settings -> Message -> State -> (State, [Action])
-handle s msg (State burn tags) = case msg ^. mAction of
+handle s msg (State tags burn) = case msg ^. mAction of
   SetTags newTags ->
-    let (updBurn, acts) = handleBurn s msg tags burn
-    in (State updBurn newTags, acts)
+    over _1 (State newTags) $ handleBurn s msg tags burn
   _ ->
-    let (updBurn, acts) = handleBurn s msg tags burn
-    in (State updBurn tags, acts)
-
+    over _1 (State tags) $ handleBurn s msg tags burn
 
 handleBurn
   :: Settings
