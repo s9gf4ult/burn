@@ -24,11 +24,15 @@ library
                  , Burn.State
   build-depends: aeson
                , base
+               , data-default
                , lens
                , servant
                , servant-server
+               , stm
                , text
                , time
+               , transformers-base
+               , warp
   default-extensions: DataKinds
                     , MultiWayIf
                     , TemplateHaskell

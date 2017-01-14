@@ -1,6 +1,7 @@
 module Burn.State where
 
 import Control.Lens
+import Data.Default
 import Data.Text as T
 import Data.Time
 
@@ -26,10 +27,16 @@ data Burn
 
 makeLenses ''Burn
 
+instance Default Burn where
+  def = StartPos
+
 data State = State
   { _sTags :: [Text]
   , _sBurn :: Burn
   } deriving (Show)
+
+instance Default State where
+  def = State [] def
 
 data Event
   = Tick
@@ -39,8 +46,8 @@ data Event
   deriving (Show)
 
 data Message = Message
-  { _mTime   :: UTCTime
-  , _mAction :: Event
+  { _mTime  :: UTCTime
+  , _mEvent :: Event
   } deriving (Show)
 
 makeLenses ''Message
@@ -65,21 +72,28 @@ data Settings = Settings
 
 makeLenses ''Settings
 
--- | Handles message and transforms state
-handle :: Settings -> Message -> State -> (State, [Action])
-handle s msg (State tags burn) = case msg ^. mAction of
-  SetTags newTags ->
-    over _1 (State newTags) $ handleBurn s msg tags burn
-  _ ->
-    over _1 (State tags) $ handleBurn s msg tags burn
+instance Default Settings where
+  def = Settings
+    { _sPomodoroLen = 25 * 60
+    , _sPauseLen    = 5 * 60
+    , _sLongPause   = 15 * 60
+    }
 
-handleBurn
+-- | Handles message and transforms state
+process :: Settings -> Message -> State -> (State, [Action])
+process s msg (State tags burn) = case msg ^. mEvent of
+  SetTags newTags ->
+    over _1 (State newTags) $ processBurn s msg tags burn
+  _ ->
+    over _1 (State tags) $ processBurn s msg tags burn
+
+processBurn
   :: Settings
   -> Message
   -> [Text]                     -- ^ Current tags
   -> Burn
   -> (Burn, [Action])
-handleBurn s (Message time evt) tags burn = case evt of
+processBurn s (Message time evt) tags burn = case evt of
   Tick -> case burn of
     StartPos -> (StartPos, [])
     PomCounting lastSaved c ->
