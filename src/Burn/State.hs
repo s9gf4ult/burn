@@ -15,18 +15,33 @@ makeLenses ''Counting
 
 data Burn
   = StartPos
-  | PomCounting Counting
-  | PauseCounting Counting
+  | PomCounting
+    { _bSavedFrom :: UTCTime
+    , _bCounting  :: Counting
+    }
+  | PauseCounting
+    { _bCounting :: Counting
+    }
+
+makeLenses ''Burn
+
+data State = State
+  { _sBurn :: Burn
+  , _sTags :: [Text]
+  }
 
 data Event
   = Tick
   | StartPomodoro
   | StartPause
+  | SetTags [Text]
 
 data Message = Message
   { _mTime   :: UTCTime
   , _mAction :: Event
   }
+
+makeLenses ''Message
 
 data PomodoroData = PomodoroData
   { _pdStarted :: UTCTime
@@ -48,21 +63,39 @@ data Settings = Settings
 makeLenses ''Settings
 
 -- | Handles message and transforms state
-handle :: Settings -> Message -> Burn -> (Burn, [Action])
-handle s (Message time evt) burn = case evt of
+handle :: Settings -> Message -> State -> (State, [Action])
+handle s msg (State burn tags) = case msg ^. mAction of
+  SetTags newTags ->
+    let (updBurn, acts) = handleBurn s msg tags burn
+    in (State updBurn newTags, acts)
+  _ ->
+    let (updBurn, acts) = handleBurn s msg tags burn
+    in (State updBurn tags, acts)
+
+
+handleBurn
+  :: Settings
+  -> Message
+  -> [Text]                     -- ^ Current tags
+  -> Burn
+  -> (Burn, [Action])
+handleBurn s (Message time evt) tags burn = case evt of
   Tick -> case burn of
     StartPos -> (StartPos, [])
-    PomCounting c -> tickCount PomCounting NotifyPomodoroFinished c
-    PauseCounting c -> tickCount PauseCounting NotifyPauseFinished c
+    PomCounting lastSaved c ->
+      over _1 (PomCounting lastSaved)
+      $ tickCount NotifyPomodoroFinished c
+    PauseCounting c ->
+      over _1 PauseCounting $ tickCount NotifyPauseFinished c
   StartPomodoro -> case burn of
     StartPos ->
       let
-        res = PomCounting $ Counting
+        res = PomCounting time $ Counting
           { _cStarted = time
           , _cLen = s ^. sPomodoroLen
           , _cFinished = False }
       in (res, [])
-    PomCounting c -> (PomCounting c, [])
+    b@(PomCounting {}) -> (b, [])
     PauseCounting c ->
       let
         passed = diffUTCTime time $ c ^. cStarted
@@ -72,7 +105,7 @@ handle s (Message time evt) burn = case evt of
           { _cLen      = pomLen
           , _cStarted  = time
           , _cFinished = False }
-      in (PomCounting newC, [])
+      in (PomCounting time newC, [])
   StartPause -> case burn of
     StartPos ->
       let
@@ -81,7 +114,7 @@ handle s (Message time evt) burn = case evt of
           , _cLen = s ^. sPauseLen
           , _cFinished = False }
       in (res, [])
-    PomCounting c ->
+    PomCounting lastSaved' c ->
       let
         passed = diffUTCTime time $ c ^. cStarted
         pauseLen = min (s ^. sLongPause)
@@ -90,15 +123,26 @@ handle s (Message time evt) burn = case evt of
           { _cStarted = time
           , _cLen = pauseLen
           , _cFinished = False }
-        tags = (error "FIXME: ")
+        lastSaved = max lastSaved' (c ^. cStarted)
         pomodoro = PomodoroData
           { _pdStarted = c ^. cStarted
-          , _pdLen = passed
+          , _pdLen = diffUTCTime time $ lastSaved
           , _pdTags = tags }
       in (PauseCounting newC, [SavePomodoro pomodoro])
     PauseCounting c -> (PauseCounting c, [])
+  SetTags {} -> case burn of
+    PomCounting lastSaved' c ->
+      let
+        lastSaved = max lastSaved' $ c ^. cStarted
+        pomodoro = PomodoroData
+          { _pdStarted = lastSaved
+          , _pdLen = diffUTCTime time lastSaved
+          , _pdTags = tags }
+      in (PomCounting time c, [SavePomodoro pomodoro])
+    b -> (b, [])
   where
-    tickCount up stopAction c =
+    tickCount :: Action -> Counting -> (Counting, [Action])
+    tickCount stopAction c =
       let
         passed = diffUTCTime time $ c ^. cStarted
         overruned = passed >= (c ^. cLen)
@@ -106,5 +150,5 @@ handle s (Message time evt) burn = case evt of
           if | c ^. cFinished -> []
              | overruned -> [stopAction]
              | otherwise -> []
-      in ( up $ set cFinished overruned c
+      in ( set cFinished overruned c
          , actions )
