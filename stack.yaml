@@ -1,6 +1,9 @@
 resolver: lts-6.27
 packages:
-- '.'
+  - 'burn'
+  - 'burn-api'
+  - 'burn-gtk'
+
 extra-deps: []
 
 flags: {}
