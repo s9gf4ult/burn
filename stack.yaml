@@ -1,11 +1,29 @@
-resolver: lts-6.27
-packages:
-  - 'burn'
-  - 'burn-api'
-  - 'burn-gtk'
-
-extra-deps: []
-
-flags: {}
-
+flags:
+  generic-deriving:
+    base-4-9: false
 extra-package-dbs: []
+packages:
+  - burn
+  - burn-api
+  - burn-gtk
+extra-deps:
+  - aeson-1.0.2.1
+  - bifunctors-5.4.1
+  - bytestring-builder-0.10.8.1.0
+  - generic-deriving-1.11.1
+  - http-api-data-0.3.4
+  - integer-logarithms-1
+  - kan-extensions-5.0.1
+  - lens-4.15.1
+  - mmorph-1.0.9
+  - primitive-0.6.2.0
+  - scientific-0.3.4.10
+  - semigroupoids-5.1
+  - servant-0.9.1.1
+  - servant-client-0.9.1.1
+  - servant-server-0.9.1.1
+  - transformers-compat-0.5.1.4
+  - unix-compat-0.4.3.1
+  - vector-0.12.0.0
+  - wai-extra-3.0.19.1
+resolver: lts-6.27

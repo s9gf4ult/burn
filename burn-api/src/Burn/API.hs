@@ -1,6 +1,10 @@
-module Burn.API where
+module Burn.API
+  ( module Burn.API
+  , module Burn.API.Types
+  ) where
 
 import Burn.API.Types
+import Data.Proxy
 import Data.Text as T
 import Servant.API
 
@@ -9,6 +13,9 @@ type BurnAPI
   :<|> StartPauseAPI
   :<|> SetTagsAPI
   :<|> StatusAPI
+
+burnAPI :: Proxy BurnAPI
+burnAPI = Proxy
 
 type StartPomodoroAPI
   = "action" :> "start_pomodoro" :> Post '[JSON] Status
