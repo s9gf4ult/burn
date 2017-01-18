@@ -13,17 +13,22 @@ build-type:          Simple
 cabal-version:       >=1.10
 extra-source-files:  README.md
 
+data-files: glade/main.glade
+                
 library
   hs-source-dirs: src
   default-language: Haskell2010
   hs-source-dirs: src
   ghc-options: -Wall
   exposed-modules: Burn.Gtk
+                 , Burn.Gtk.View
   build-depends: base >= 4.6 && < 5
                , gtk3
+               , lens
   default-extensions: DataKinds
                     , LambdaCase
                     , MultiWayIf
+                    , RecordWildCards
                     , TemplateHaskell
                     , TypeOperators
                         
@@ -33,3 +38,6 @@ executable burn-gtk
   main-is:             Main.hs
   default-language:    Haskell2010
   build-depends:       base >= 4.6 && < 5
+                     , burn-gtk
+                     , gtk3
+                     , lens
