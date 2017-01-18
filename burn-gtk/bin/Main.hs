@@ -11,6 +11,6 @@ main = do
   bld <- builderNew
   xmlFile <- getDataFileName "glade/main.glade"
   builderAddFromFile bld xmlFile
-  view <- newView bld
-  widgetShowAll $ view ^. vMain
+  v <- newView bld
+  widgetShowAll $ v ^. vMain
   mainGUI
