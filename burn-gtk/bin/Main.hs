@@ -1,6 +1,6 @@
 module Main where
 
-import Burn.Gtk.View
+import Burn.Gtk
 import Control.Lens
 import Graphics.UI.Gtk
 import Paths_burn_gtk
@@ -12,5 +12,7 @@ main = do
   xmlFile <- getDataFileName "glade/main.glade"
   builderAddFromFile bld xmlFile
   v <- newView bld
+  c <- newController
+  connectSignals v c
   widgetShowAll $ v ^. vMain
   mainGUI
