@@ -25,6 +25,7 @@ data Burn
     }
   deriving (Show)
 
+makePrisms ''Burn
 makeLenses ''Burn
 
 instance Default Burn where
@@ -67,6 +68,8 @@ data Action
   | NotifyPomodoroFinished
   | NotifyPauseFinished
   deriving (Show)
+
+makePrisms ''Action
 
 data Settings = Settings
   { _sPomodoroLen :: NominalDiffTime
