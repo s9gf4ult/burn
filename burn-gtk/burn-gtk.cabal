@@ -26,6 +26,7 @@ library
                  , Burn.Gtk.View
   build-depends: base >= 4.6 && < 5
                , burn-api
+               , formatting
                , gtk3
                , http-client
                , lens
@@ -37,6 +38,7 @@ library
                     , LambdaCase
                     , MultiWayIf
                     , NumDecimals
+                    , OverloadedStrings
                     , RecordWildCards
                     , TemplateHaskell
                     , TypeOperators
@@ -44,7 +46,7 @@ library
 
 executable burn-gtk
   default-language: Haskell2010
-  ghc-options:     -Wall
+  ghc-options:     -Wall -threaded
   hs-source-dirs:   bin
   main-is:          Main.hs
   build-depends: base >= 4.6 && < 5

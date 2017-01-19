@@ -19,6 +19,7 @@ library
                      , Burn.API.Types
   build-depends:       aeson
                      , base >= 4.6 && < 5
+                     , lens
                      , servant  >= 0.9.1.1
                      , text
   default-extensions: DataKinds

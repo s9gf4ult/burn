@@ -12,7 +12,7 @@ main = do
   xmlFile <- getDataFileName "glade/main.glade"
   builderAddFromFile bld xmlFile
   v <- newView bld
-  c <- newController
+  c <- newController v
   connectSignals v c
   widgetShowAll $ v ^. vMain
   mainGUI

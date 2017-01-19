@@ -1,3 +1,5 @@
+{-# LANGUAGE NoOverloadedStrings #-}
+
 module Burn.Gtk.View where
 
 import Control.Lens

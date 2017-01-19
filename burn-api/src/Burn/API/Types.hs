@@ -1,5 +1,6 @@
 module Burn.API.Types where
 
+import Control.Lens
 import Data.Aeson
 import Data.Aeson.TH
 import Data.Text as T
@@ -7,6 +8,7 @@ import Data.Text as T
 data Notification = PomodoroFinish | PauseFinish
   deriving (Eq, Show)
 
+makePrisms ''Notification
 deriveJSON defaultOptions ''Notification
 
 type Seconds = Int
@@ -16,6 +18,7 @@ data Counting = Counting
   , _cLeft   :: !Seconds
   } deriving (Eq, Show)
 
+makeLenses ''Counting
 deriveJSON defaultOptions ''Counting
 
 data WhatCounted
@@ -24,6 +27,7 @@ data WhatCounted
   | PauseCounting !Counting
   deriving (Eq, Show)
 
+makePrisms ''WhatCounted
 deriveJSON defaultOptions ''WhatCounted
 
 data State = State
@@ -31,6 +35,7 @@ data State = State
   , _sCounting :: !WhatCounted
   } deriving (Eq, Show)
 
+makeLenses ''State
 deriveJSON defaultOptions ''State
 
 data Status = Status
@@ -38,4 +43,5 @@ data Status = Status
   , _asState         :: !State
   } deriving (Eq, Show)
 
+makeLenses ''Status
 deriveJSON defaultOptions ''Status

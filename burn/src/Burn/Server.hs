@@ -1,6 +1,5 @@
 module Burn.Server where
 
-import Burn.API
 import Control.Monad.Except
 import Burn.State
 import Control.Concurrent.STM
@@ -13,7 +12,7 @@ import Data.Time
 import Network.Wai.Handler.Warp (run)
 import Servant
 
-import qualified Burn.API.Types as A
+import qualified Burn.API as A
 
 data Payload = Payload
   { _pState :: TVar State
@@ -28,11 +27,9 @@ initPayload = Payload <$> newTVarIO def <*> newTVarIO def
 burn :: IO ()
 burn = do
   p <- initPayload
-  run 1338 $ serve proxy $ handlers p
-  where
-    proxy = Proxy :: Proxy BurnAPI
+  run 1338 $ serve A.burnAPI $ handlers p
 
-handlers :: Payload -> Server BurnAPI
+handlers :: Payload -> Server A.BurnAPI
 handlers p
   =    startPomodoro p
   :<|> startPause p
@@ -52,19 +49,20 @@ handleMessage evt p = liftBase $ do
     let res@(newSt, _) = process settings msg state
     writeTVar (p ^. pState) newSt
     return res
+  print evt
   return $ mkStatus now res
 
 
-startPomodoro :: Payload -> Server StartPomodoroAPI
+startPomodoro :: Payload -> Server A.StartPomodoroAPI
 startPomodoro = handleMessage StartPomodoro
 
-startPause :: Payload -> Server StartPauseAPI
+startPause :: Payload -> Server A.StartPauseAPI
 startPause = handleMessage StartPause
 
-setTags :: Payload -> Server SetTagsAPI
+setTags :: Payload -> Server A.SetTagsAPI
 setTags p tags = handleMessage (SetTags tags) p
 
-status :: Payload -> Server StatusAPI
+status :: Payload -> Server A.StatusAPI
 status = handleMessage Tick
 
 mkStatus :: UTCTime -> (State, [Action]) -> A.Status
