@@ -3,7 +3,6 @@ module Burn.Server where
 import Control.Monad.Except
 import Burn.State
 import Control.Concurrent.STM
-import Control.Concurrent.STM.TVar
 import Control.Lens
 import Control.Monad.Base
 import Data.Default

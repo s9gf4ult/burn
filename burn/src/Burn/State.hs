@@ -59,7 +59,7 @@ data PomodoroData = PomodoroData
   { _pdStarted :: UTCTime
   , _pdLen     :: NominalDiffTime
   , _pdTags    :: [Text]
-  } deriving (Show)
+  } deriving (Eq, Ord, Show)
 
 makeLenses ''PomodoroData
 
@@ -67,7 +67,7 @@ data Action
   = SavePomodoro PomodoroData
   | NotifyPomodoroFinished
   | NotifyPauseFinished
-  deriving (Show)
+  deriving (Eq, Ord, Show)
 
 makePrisms ''Action
 
@@ -75,7 +75,7 @@ data Settings = Settings
   { _sPomodoroLen :: NominalDiffTime
   , _sPauseLen    :: NominalDiffTime
   , _sLongPause   :: NominalDiffTime
-  } deriving (Show)
+  } deriving (Eq, Ord, Show)
 
 makeLenses ''Settings
 
@@ -100,7 +100,7 @@ processBurn
   -> [Text]                     -- ^ Current tags
   -> Burn
   -> (Burn, [Action])
-processBurn s (Message time evt) tags burn = case evt of
+processBurn s (Message now evt) tags burn = case evt of
   Tick -> case burn of
     StartPos -> (StartPos, [])
     PomCounting lastSaved c ->
@@ -111,43 +111,43 @@ processBurn s (Message time evt) tags burn = case evt of
   StartPomodoro -> case burn of
     StartPos ->
       let
-        res = PomCounting time $ Counting
-          { _cStarted = time
+        res = PomCounting now $ Counting
+          { _cStarted = now
           , _cLen = s ^. sPomodoroLen
           , _cFinished = False }
       in (res, [])
     b@(PomCounting {}) -> (b, [])
     PauseCounting c ->
       let
-        passed = diffUTCTime time $ c ^. cStarted
+        passed = diffUTCTime now $ c ^. cStarted
         pomLen = min (s ^. sPomodoroLen)
           $ (s ^. sPomodoroLen) * passed / (c ^. cLen)
         newC = Counting
           { _cLen      = pomLen
-          , _cStarted  = time
+          , _cStarted  = now
           , _cFinished = False }
-      in (PomCounting time newC, [])
+      in (PomCounting now newC, [])
   StartPause -> case burn of
     StartPos ->
       let
         res = PauseCounting $ Counting
-          { _cStarted = time
+          { _cStarted = now
           , _cLen = s ^. sPauseLen
           , _cFinished = False }
       in (res, [])
     PomCounting lastSaved' c ->
       let
-        passed = diffUTCTime time $ c ^. cStarted
+        passed = diffUTCTime now $ c ^. cStarted
         pauseLen = min (s ^. sLongPause)
-          $ (s ^. sPauseLen) * passed / (s ^. sPomodoroLen)
+          $ (s ^. sPauseLen) * passed / (c ^. cLen)
         newC = Counting
-          { _cStarted = time
+          { _cStarted = now
           , _cLen = pauseLen
           , _cFinished = False }
         lastSaved = max lastSaved' (c ^. cStarted)
         pomodoro = PomodoroData
           { _pdStarted = c ^. cStarted
-          , _pdLen = diffUTCTime time $ lastSaved
+          , _pdLen = diffUTCTime now $ lastSaved
           , _pdTags = tags }
       in (PauseCounting newC, [SavePomodoro pomodoro])
     PauseCounting c -> (PauseCounting c, [])
@@ -157,15 +157,15 @@ processBurn s (Message time evt) tags burn = case evt of
         lastSaved = max lastSaved' $ c ^. cStarted
         pomodoro = PomodoroData
           { _pdStarted = lastSaved
-          , _pdLen = diffUTCTime time lastSaved
+          , _pdLen = diffUTCTime now lastSaved
           , _pdTags = tags }
-      in (PomCounting time c, [SavePomodoro pomodoro])
+      in (PomCounting now c, [SavePomodoro pomodoro])
     b -> (b, [])
   where
     tickCount :: Action -> Counting -> (Counting, [Action])
     tickCount stopAction c =
       let
-        passed = diffUTCTime time $ c ^. cStarted
+        passed = diffUTCTime now $ c ^. cStarted
         overruned = passed >= (c ^. cLen)
         actions =
           if | c ^. cFinished -> []
