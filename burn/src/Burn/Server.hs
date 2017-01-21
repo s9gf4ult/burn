@@ -49,7 +49,8 @@ handleMessage evt p = liftBase $ do
     writeTVar (p ^. pState) newSt
     return res
   print evt
-  return $ mkStatus now res
+  let reply = mkStatus now res
+  return reply
 
 
 startPomodoro :: Payload -> Server A.StartPomodoroAPI

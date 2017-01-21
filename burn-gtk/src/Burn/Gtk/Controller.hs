@@ -31,8 +31,9 @@ updateView v st = do
     s = st ^. asState
     tt :: Int -> Text
     tt seconds =
-      let (mins, secs) = seconds `divMod` 60
-      in sformat (left 0 '0' % ":" % left 2 '0') mins secs
+      let
+        (mins, secs) = (max 0 seconds) `divMod` 60
+      in sformat (left 2 '0' % ":" % left 2 '0') mins secs
     formatCounting c = (tt $ c ^. cPassed) <> "/" <> (tt $ c ^. cLeft)
     counterText = case s ^. sCounting of
       Waiting -> "--:--"
@@ -49,8 +50,8 @@ newController :: View -> IO Controller
 newController v = do
   m <- newManager defaultManagerSettings
   let
-    base = BaseUrl Http "127.0.0.1" 1338 "" -- FIXME: get from params
-    env = ClientEnv m base
+    baseUri = BaseUrl Http "127.0.0.1" 1338 "" -- FIXME: get from params
+    env = ClientEnv m baseUri
   return $ Controller
     { _cStartPomodoro = runClientM startPomodoro env >>= either print (updateView v)
     , _cStartPause = runClientM startPause env >>= either print (updateView v)

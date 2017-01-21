@@ -138,8 +138,11 @@ processBurn s (Message now evt) tags burn = case evt of
     PomCounting lastSaved' c ->
       let
         passed = diffUTCTime now $ c ^. cStarted
-        pauseLen = min (s ^. sLongPause)
-          $ (s ^. sPauseLen) * passed / (c ^. cLen)
+        lenTruncator = if
+          | passed > s ^. sPomodoroLen -> s ^. sLongPause
+          | otherwise                  -> s ^. sPauseLen
+        pauseLen =
+          min lenTruncator $ (s ^. sPauseLen) * passed / (c ^. cLen)
         newC = Counting
           { _cStarted = now
           , _cLen = pauseLen
