@@ -2,8 +2,13 @@ module Burn.State where
 
 import Control.Lens
 import Data.Default
-import Data.Text as T
+import Data.Foldable
+import Data.Map.Strict (Map)
+import Data.Text (Text)
 import Data.Time
+
+import qualified Data.Map.Strict as M
+import qualified Data.Text as T
 
 data Counting = Counting
   { _cLen      :: NominalDiffTime
@@ -31,15 +36,34 @@ makeLenses ''Burn
 instance Default Burn where
   def = StartPos
 
+data Times = Times
+  { _tNoTag  :: NominalDiffTime
+  , _tPerTag :: Map Text NominalDiffTime
+  } deriving (Show)
+
+instance Default Times where
+  def = Times 0 M.empty
+
+makeLenses ''Times
+
+bumpTimes :: [Text] -> NominalDiffTime -> Times -> Times
+bumpTimes tags diff
+  = over tNoTag (+ diff)
+  . over tPerTag bumpTags
+  where
+    bumpTags m = foldl' go m tags
+    go m tag = M.insertWith (+) tag diff m
+
 data State = State
-  { _sTags :: [Text]
-  , _sBurn :: Burn
+  { _sTags  :: [Text]
+  , _sTimes :: Times
+  , _sBurn  :: Burn
   } deriving (Show)
 
 makeLenses ''State
 
 instance Default State where
-  def = State [] def
+  def = State [] def def
 
 data Event
   = Tick

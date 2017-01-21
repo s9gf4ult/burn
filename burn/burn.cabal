@@ -23,6 +23,7 @@ library
   build-depends: aeson
                , base >= 4.6 && <= 5
                , burn-api
+               , containers
                , data-default
                , lens
                , mtl
