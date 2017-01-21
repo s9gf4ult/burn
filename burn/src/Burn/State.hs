@@ -36,28 +36,11 @@ makeLenses ''Burn
 instance Default Burn where
   def = StartPos
 
-data Times = Times
-  { _tNoTag  :: NominalDiffTime
-  , _tPerTag :: Map Text NominalDiffTime
-  } deriving (Show)
-
-instance Default Times where
-  def = Times 0 M.empty
-
-makeLenses ''Times
-
-bumpTimes :: [Text] -> NominalDiffTime -> Times -> Times
-bumpTimes tags diff
-  = over tNoTag (+ diff)
-  . over tPerTag bumpTags
-  where
-    bumpTags m = foldl' go m tags
-    go m tag = M.insertWith (+) tag diff m
-
 data State = State
-  { _sTags  :: [Text]
-  , _sTimes :: Times
-  , _sBurn  :: Burn
+  { _sTags    :: [Text]
+  , _sCounted :: [PomodoroData]
+    -- ^ List of today's counted pomodoros
+  , _sBurn    :: Burn
   } deriving (Show)
 
 makeLenses ''State
@@ -112,11 +95,24 @@ instance Default Settings where
 
 -- | Handles message and transforms state
 process :: Settings -> Message -> State -> (State, [Action])
-process s msg (State tags burn) = case msg ^. mEvent of
-  SetTags newTags ->
-    over _1 (State newTags) $ processBurn s msg tags burn
-  _ ->
-    over _1 (State tags) $ processBurn s msg tags burn
+process s msg state =
+  let
+    (newB, actions) = processBurn s msg (state ^. sTags) (state ^. sBurn)
+    newTas = processTags msg $ state ^. sTags
+    newCounted
+
+
+
+processTags
+  :: Message
+  -> [Text]
+  -> [Text]
+processTimes msg tags = case msg ^. mEvent of
+  SetTags newTags -> newTags
+  _               -> tags
+
+processCounted :: [Action] -> [PomodoroData] -> [PomodoroData]
+processCounted actions = (<> (actions ^.. folded . _SavePomodoro))
 
 processBurn
   :: Settings
