@@ -1,9 +1,13 @@
 module Burn.State where
 
+import Burn.API.Types (PomodoroData(..))
 import Control.Lens
+import Data.Aeson
+import Data.Aeson.TH
 import Data.Default
 import Data.Foldable
 import Data.Map.Strict (Map)
+import Data.Monoid
 import Data.Text (Text)
 import Data.Time
 
@@ -37,10 +41,10 @@ instance Default Burn where
   def = StartPos
 
 data State = State
-  { _sTags    :: [Text]
-  , _sCounted :: [PomodoroData]
+  { _sTags          :: ![Text]
+  , _sTodayPomodors :: ![PomodoroData]
     -- ^ List of today's counted pomodoros
-  , _sBurn    :: Burn
+  , _sBurn          :: !Burn
   } deriving (Show)
 
 makeLenses ''State
@@ -61,14 +65,6 @@ data Message = Message
   } deriving (Show)
 
 makeLenses ''Message
-
-data PomodoroData = PomodoroData
-  { _pdStarted :: UTCTime
-  , _pdLen     :: NominalDiffTime
-  , _pdTags    :: [Text]
-  } deriving (Eq, Ord, Show)
-
-makeLenses ''PomodoroData
 
 data Action
   = SavePomodoro PomodoroData
@@ -98,16 +94,15 @@ process :: Settings -> Message -> State -> (State, [Action])
 process s msg state =
   let
     (newB, actions) = processBurn s msg (state ^. sTags) (state ^. sBurn)
-    newTas = processTags msg $ state ^. sTags
-    newCounted
-
-
+    newTags = processTags msg $ state ^. sTags
+    newCounted = processCounted actions $ state ^. sTodayPomodors
+  in (State newTags newCounted newB, actions)
 
 processTags
   :: Message
   -> [Text]
   -> [Text]
-processTimes msg tags = case msg ^. mEvent of
+processTags msg tags = case msg ^. mEvent of
   SetTags newTags -> newTags
   _               -> tags
 

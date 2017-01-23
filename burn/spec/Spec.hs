@@ -1,5 +1,6 @@
 module Main where
 
+import Burn.API.Types (PomodoroData(..), pdLen)
 import Burn.State
 import Control.Arrow
 import Control.Lens

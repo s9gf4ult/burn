@@ -33,6 +33,7 @@ library
                , servant >= 0.9.1.1
                , servant-client >= 0.9.1.1
                , text
+               , time
                , transformers-base
   default-extensions: DataKinds
                     , LambdaCase
@@ -42,6 +43,7 @@ library
                     , RecordWildCards
                     , TemplateHaskell
                     , TypeOperators
+                    , ViewPatterns
                         
 
 executable burn-gtk

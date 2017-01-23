@@ -22,6 +22,7 @@ library
                      , lens
                      , servant  >= 0.9.1.1
                      , text
+                     , time
   default-extensions: DataKinds
                     , TemplateHaskell
                     , TypeOperators

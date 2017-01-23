@@ -8,8 +8,10 @@ import Control.Lens
 import Control.Monad
 import Control.Monad.Base
 import Data.Foldable
+import Data.Maybe
 import Data.Monoid
 import Data.Text as T
+import Data.Time
 import Formatting
 import Graphics.UI.Gtk
 import Network.HTTP.Client
@@ -29,17 +31,20 @@ updateView v st = do
   traverse_ showNotification $ st ^. asNotifications
   let
     s = st ^. asState
-    tt :: Int -> Text
-    tt seconds =
+    tt :: NominalDiffTime -> Text
+    tt (truncate -> seconds) =
       let
-        (mins, secs) = (max 0 seconds) `divMod` 60
+        (mins, secs) = (max 0 seconds) `divMod` (60 :: Int)
       in sformat (left 2 '0' % ":" % left 2 '0') mins secs
-    formatCounting c = (tt $ c ^. cPassed) <> "/" <> (tt $ c ^. cLeft)
+    formatCounting c = (tt $ c ^. cPassed) <> "/" <> (tt $ c ^. cLen)
     counterText = case s ^. sCounting of
       Waiting -> "--:--"
-      PomdoroCounting c -> "P " <> formatCounting c
+      PomodoroCounting c -> "P " <> formatCounting c
       PauseCounting c -> "  " <> formatCounting c
-    timeSpent = "FIXME: implement" :: Text
+    currentPomodor = fromMaybe 0 $ s ^? sCounting . _PomodoroCounting . cPassed
+    todayPomodoros = sumOf (sTodayPomodors . folded . pdLen) s
+    spentSeconds = currentPomodor + todayPomodoros
+    timeSpent = tt $ spentSeconds
   labelSetText (v ^. vCounter) counterText
   labelSetText (v ^. vTimeSpent) timeSpent
   entrySetText (v ^. vTags) $ T.unwords $ s ^. sTags

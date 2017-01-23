@@ -69,8 +69,9 @@ mkStatus :: UTCTime -> (State, [Action]) -> A.Status
 mkStatus now (state, actions) = A.Status
   { A._asNotifications = catMaybes $ map toNotif actions
   , A._asState         = A.State
-    { A._sTags     = state ^. sTags
-    , A._sCounting = counting
+    { A._sTags          = state ^. sTags
+    , A._sTodayPomodors = state ^. sTodayPomodors
+    , A._sCounting      = counting
     }
   }
   where
@@ -80,11 +81,11 @@ mkStatus now (state, actions) = A.Status
       _                      -> Nothing
     counting = case state ^. sBurn of
       StartPos -> A.Waiting
-      PomCounting _ c -> A.PomdoroCounting $ toApiCounting c
+      PomCounting _ c -> A.PomodoroCounting $ toApiCounting c
       PauseCounting c -> A.PauseCounting $ toApiCounting c
     toApiCounting c =
       let passed = diffUTCTime now $ c ^. cStarted
       in A.Counting
-         { A._cPassed = round passed
-         , A._cLeft = round $ (c ^. cLen) - passed
+         { A._cPassed = passed
+         , A._cLen = c ^. cLen
          }
