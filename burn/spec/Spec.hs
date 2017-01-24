@@ -1,6 +1,6 @@
 module Main where
 
-import Burn.API.Types (PomodoroData(..), pdLen)
+import Burn.API.Types (pdLen)
 import Burn.State
 import Control.Arrow
 import Control.Lens
@@ -97,9 +97,9 @@ shortPomodoro = runSIO $ do
   isolate $ do
     emptyActions =<< spend (mm 1)
     send' StartPomodoro
-    pomodoroLenShould $ mm 6.25
-    pomodoroFinished =<< spend (mm 6.25)
-    pomodoroSaved (mm 6.25) =<< send StartPause
+    pomodoroLenShould $ mm 10
+    pomodoroFinished =<< spend (mm 10)
+    pomodoroSaved (mm 10) =<< send StartPause
     pauseLenShould $ mm 5
   isolate $ do
     pauseFinished =<< spend (mm 4)
@@ -109,17 +109,41 @@ shortPomodoro = runSIO $ do
 longPomodoro :: Assertion
 longPomodoro = runSIO $ do
   send' StartPomodoro
-  pomodoroFinished =<< spend (mm 30)
-  pomodoroSaved (mm 30) =<< send StartPause
-  pauseLenShould $ mm 6
+  pomodoroFinished =<< spend (mm 35)
+  pomodoroSaved (mm 35) =<< send StartPause
+  pauseLenShould $ mm 7
+
   isolate $ do
     emptyActions =<< spend (mm 1)
     send' StartPomodoro
-    pomodoroLenShould $ (25 * 10) -- 60 * (25 * 1/ 6 )
+    pomodoroLenShould $ (mm -5)
+    emptyActions =<< spend (mm 5)
+    pomodoroSaved (mm 5) =<< send StartPause
+    pauseLenShould $ mm 7
+
   isolate $ do
-    pauseFinished =<< spend (mm 6)
+    emptyActions =<< spend (mm 2)
     send' StartPomodoro
-    pomodoroLenShould $ mm 25
+    pomodoroLenShould 0
+    emptyActions =<< spend (mm 5)
+    pomodoroSaved (mm 5) =<< send StartPause
+    pauseLenShould $ mm 6
+
+  isolate $ do
+    emptyActions =<< spend (mm 3)
+    send' StartPomodoro
+    pomodoroLenShould $ (mm 5)
+    pomodoroFinished =<< spend (mm 5)
+    pomodoroSaved (mm 5) =<< send StartPause
+    pauseLenShould $ mm 5
+
+  isolate $ do
+    pauseFinished =<< spend (mm 7)
+    send' StartPomodoro
+    pomodoroLenShould $ (mm 25)
+    emptyActions =<< spend (mm 5)
+    pomodoroSaved (mm 5) =<< send StartPause
+    pauseLenShould $ mm 1
 
 shortPause :: Assertion
 shortPause = runSIO $ do
