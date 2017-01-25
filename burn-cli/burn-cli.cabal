@@ -20,7 +20,10 @@ library
   ghc-options: -Wall
   exposed-modules: Burn.Cli
   build-depends: base >= 4.6 && <= 5
+               , burn
                , burn-api
+               , http-client
+               , lens
                , servant >= 0.9.1.1
                , servant-client >= 0.9.1.1
                , text
@@ -31,7 +34,7 @@ library
                     , TemplateHaskell
                     , TypeOperators
                         
-executable burn
+executable burn-cli
   hs-source-dirs:      bin
   ghc-options: -Wall -threaded
   main-is:             Main.hs
