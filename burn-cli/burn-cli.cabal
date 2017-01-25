@@ -1,0 +1,40 @@
+name:                burn-cli
+version:             0.1.0.0
+synopsis:            Simple project template from stack
+description:         Please see README.md
+homepage:            https://github.com/githubuser/burn-cli#readme
+license:             BSD3
+license-file:        LICENSE
+author:              Author name here
+maintainer:          example@example.com
+copyright:           2017 Author name here
+category:            Web
+build-type:          Simple
+cabal-version:       >=1.10
+extra-source-files:  README.md
+
+library
+  hs-source-dirs: src
+  default-language: Haskell2010
+  hs-source-dirs: src
+  ghc-options: -Wall
+  exposed-modules: Burn.Cli
+  build-depends: base >= 4.6 && <= 5
+               , burn-api
+               , servant >= 0.9.1.1
+               , servant-client >= 0.9.1.1
+               , text
+               , time
+  default-extensions: DataKinds
+                    , LambdaCase
+                    , MultiWayIf
+                    , TemplateHaskell
+                    , TypeOperators
+                        
+executable burn
+  hs-source-dirs:      bin
+  ghc-options: -Wall -threaded
+  main-is:             Main.hs
+  default-language:    Haskell2010
+  build-depends:       base >= 4.6 && < 5
+                     , burn-cli
