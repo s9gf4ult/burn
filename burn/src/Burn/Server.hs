@@ -1,20 +1,23 @@
 module Burn.Server where
 
-import Control.Monad.Except
 import Burn.State
 import Control.Concurrent.STM
 import Control.Lens
 import Control.Monad.Base
+import Control.Monad.Except
+import Data.Csv
 import Data.Default
 import Data.Maybe
 import Data.Time
 import Network.Wai.Handler.Warp (run)
 import Servant
+import System.Directory
 
 import qualified Burn.API as A
+import qualified Data.ByteString.Lazy as BL
 
 data Payload = Payload
-  { _pState :: TVar State
+  { _pState    :: TVar State
   , _pSettings :: TVar Settings
   }
 
@@ -42,15 +45,23 @@ handleMessage
 handleMessage evt p = liftBase $ do
   now <- getCurrentTime
   let msg = Message now evt
-  res <- atomically $ do
+  (settings, res@(_, actions)) <- atomically $ do
     state <- readTVar $ p ^. pState
     settings <- readTVar $ p ^. pSettings
     let res@(newSt, _) = process settings msg state
     writeTVar (p ^. pState) newSt
-    return res
+    return (settings, res)
   print evt
+  savePomodoros (settings ^. sDataFile) actions
   let reply = mkStatus now res
   return reply
+
+savePomodoros :: FilePath -> [Action] -> IO ()
+savePomodoros fp' actions = do
+  fp <- canonicalizePath fp'
+  let pomodoros = encode $ actions ^.. folded . _SavePomodoro
+  BL.appendFile fp pomodoros
+
 
 
 startPomodoro :: Payload -> Server A.StartPomodoroAPI

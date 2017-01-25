@@ -23,8 +23,11 @@ library
   build-depends: aeson
                , base >= 4.6 && <= 5
                , burn-api
+               , bytestring
+               , cassava
                , containers
                , data-default
+               , directory
                , lens
                , mtl
                , servant      >= 0.9.1.1
@@ -55,6 +58,7 @@ test-suite spec
   default-language: Haskell2010
   default-extensions: FlexibleContexts
                     , NegativeLiterals
+                    , OverloadedStrings
                     , TemplateHaskell
   build-depends: base
                , burn

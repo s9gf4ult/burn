@@ -160,11 +160,20 @@ shortPause = runSIO $ do
     emptyActions =<< send StartPomodoro
     pomodoroLenShould $ mm 25
 
-
+setTags :: Assertion
+setTags = runSIO $ do
+  send' StartPomodoro
+  emptyActions =<< spend (mm 10)
+  pomodoroSaved (mm 10) =<< send (SetTags ["new", "tags"])
+  emptyActions =<< spend (mm 10)
+  pomodoroSaved (mm 10) =<< send (SetTags ["othe", "tags"])
+  pomodoroFinished =<< spend (mm 5)
+  pomodoroSaved (mm 5) =<< send StartPause
 
 main :: IO ()
 main = defaultMain $ testGroup "Test cases"
   [ testCase "shortPomodoro" shortPomodoro
   , testCase "longPomodoro" longPomodoro
   , testCase "shortPause" shortPause
+  , testCase "setTags" setTags
   ]

@@ -19,11 +19,14 @@ library
                      , Burn.API.Types
   build-depends:       aeson
                      , base >= 4.6 && < 5
+                     , cassava
                      , lens
                      , servant  >= 0.9.1.1
                      , text
                      , time
   default-extensions: DataKinds
+                    , DeriveGeneric
+                    , GeneralizedNewtypeDeriving
                     , TemplateHaskell
                     , TypeOperators
   default-language:    Haskell2010

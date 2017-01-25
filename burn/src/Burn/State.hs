@@ -1,6 +1,6 @@
 module Burn.State where
 
-import Burn.API.Types (PomodoroData(..))
+import Burn.API.Types (PomodoroData(..), Tags(..))
 import Control.Lens
 import Data.Aeson
 import Data.Aeson.TH
@@ -76,10 +76,11 @@ data Action
 makePrisms ''Action
 
 data Settings = Settings
-  { _sPomodoroLen :: NominalDiffTime
-  , _sPauseLen    :: NominalDiffTime
-  , _sLongPause   :: NominalDiffTime
-  , _sDayEnd      :: DiffTime
+  { _sPomodoroLen :: !NominalDiffTime
+  , _sPauseLen    :: !NominalDiffTime
+  , _sLongPause   :: !NominalDiffTime
+  , _sDayEnd      :: !DiffTime
+  , _sDataFile    :: !FilePath
   } deriving (Eq, Ord, Show)
 
 makeLenses ''Settings
@@ -90,6 +91,7 @@ instance Default Settings where
     , _sPauseLen    = 5 * 60
     , _sLongPause   = 15 * 60
     , _sDayEnd      = secondsToDiffTime $ 5 * 3600 -- 5 am is a day end
+    , _sDataFile    = "/home/razor/burn/pomodoros.csv" -- FIXME: make configurable
     }
 
 -- | Handles message and transforms state
@@ -172,7 +174,7 @@ processBurn s (Message now evt) tags burn = case evt of
         pomodoro = PomodoroData
           { _pdStarted = lastSaved
           , _pdLen     = diffUTCTime now $ lastSaved
-          , _pdTags    = tags }
+          , _pdTags    = Tags tags }
       in (PauseCounting newC, [SavePomodoro pomodoro])
     PauseCounting c -> (PauseCounting c, [])
   SetTags newTags -> case burn of
@@ -183,7 +185,7 @@ processBurn s (Message now evt) tags burn = case evt of
           pomodoro = PomodoroData
             { _pdStarted = lastSaved
             , _pdLen = diffUTCTime now lastSaved
-            , _pdTags = tags }
+            , _pdTags = Tags tags }
         in (PomCounting now c, [SavePomodoro pomodoro])
     b -> (b, [])
   where
