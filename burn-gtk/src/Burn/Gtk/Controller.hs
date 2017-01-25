@@ -16,6 +16,7 @@ import Formatting
 import Graphics.UI.Gtk
 import Network.HTTP.Client
 import Servant.Client
+import System.Process
 
 -- | Hooks to run when on some events
 data Controller = Controller
@@ -49,7 +50,11 @@ updateView v st = do
   labelSetText (v ^. vTimeSpent) timeSpent
   entrySetText (v ^. vTags) $ T.unwords $ s ^. sTags
   where
-    showNotification n = print n -- FIXME:
+    showNotification = \case
+      PomodoroFinish ->
+        void $ rawSystem "notify-send" ["-t", "0", "Take a break!"]
+      PauseFinish ->
+        void $ rawSystem "notify-send" ["-t", "0", "Go to work, lazy ass!"]
 
 newController :: View -> IO Controller
 newController v = do
