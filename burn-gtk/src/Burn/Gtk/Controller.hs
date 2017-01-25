@@ -27,17 +27,27 @@ data Controller = Controller
 
 makeLenses ''Controller
 
+formatTimeDiff :: NominalDiffTime -> Text
+formatTimeDiff (truncate -> seconds) =
+  let
+    (mins', secs) = divMod (max 0 seconds) (60 :: Int)
+    (hours', mins) = divMod mins' 60
+    (days, hours) = divMod hours' 24
+    ms = sformat (left 2 '0' % ":" % left 2 '0') mins secs
+    hms = sformat (left 2 '0' % ":" % stext) hours ms
+    dhms = sformat (shown % "d" % stext) days hms
+    res = if
+      | days  > 0 -> dhms
+      | hours > 0 -> hms
+      | otherwise -> ms
+  in res
+
 updateView :: View -> Status -> IO ()
 updateView v st = do
   traverse_ showNotification $ st ^. asNotifications
   let
     s = st ^. asState
-    tt :: NominalDiffTime -> Text
-    tt (truncate -> seconds) =
-      let
-        (mins, secs) = (max 0 seconds) `divMod` (60 :: Int)
-      in sformat (left 2 '0' % ":" % left 2 '0') mins secs
-    formatCounting c = (tt $ c ^. cPassed) <> "/" <> (tt $ c ^. cLen)
+    formatCounting c = (formatTimeDiff $ c ^. cPassed) <> "/" <> (formatTimeDiff $ c ^. cLen)
     counterText = case s ^. sCounting of
       Waiting -> "--:--"
       PomodoroCounting c -> "P " <> formatCounting c
@@ -45,7 +55,7 @@ updateView v st = do
     currentPomodor = fromMaybe 0 $ s ^? sCounting . _PomodoroCounting . cPassed
     todayPomodoros = sumOf (sTodayPomodors . folded . pdLen) s
     spentSeconds = currentPomodor + todayPomodoros
-    timeSpent = tt $ spentSeconds
+    timeSpent = formatTimeDiff $ spentSeconds
   labelSetText (v ^. vCounter) counterText
   labelSetText (v ^. vTimeSpent) timeSpent
   entrySetText (v ^. vTags) $ T.unwords $ s ^. sTags
