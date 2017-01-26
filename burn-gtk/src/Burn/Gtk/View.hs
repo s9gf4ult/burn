@@ -12,6 +12,7 @@ data View = View
   , _vCounter       :: !Label
   , _vTimeSpent     :: !Label
   , _vTags          :: !Entry
+  , _vStatusIcon    :: !StatusIcon
   }
 
 makeLenses ''View
@@ -24,4 +25,5 @@ newView b = do
   _vCounter       <- builderGetObject b castToLabel "counter"
   _vTimeSpent     <- builderGetObject b castToLabel "time_spent"
   _vTags          <- builderGetObject b castToEntry "tags"
+  _vStatusIcon    <- statusIconNew
   return View{..}

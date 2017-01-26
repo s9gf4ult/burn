@@ -27,6 +27,21 @@ data Controller = Controller
 
 makeLenses ''Controller
 
+data Pixbufs = Pixbufs
+  { _pInit     :: Pixbuf
+  , _pPomodoro :: Pixbuf
+  , _pPause    :: Pixbuf
+  }
+
+makeLenses ''Pixbufs
+
+initPixbufs :: FilePath -> FilePath -> FilePath -> IO Pixbufs
+initPixbufs initImg pom pause = do
+  _pInit <- pixbufNewFromFile initImg
+  _pPomodoro <- pixbufNewFromFile pom
+  _pPause <- pixbufNewFromFile pause
+  return $ Pixbufs{..}
+
 formatTimeDiff :: NominalDiffTime -> Text
 formatTimeDiff (truncate -> seconds) =
   let
@@ -42,8 +57,8 @@ formatTimeDiff (truncate -> seconds) =
       | otherwise -> ms
   in res
 
-updateView :: View -> Status -> IO ()
-updateView v st = do
+updateView :: View -> Pixbufs -> Status -> IO ()
+updateView v pbs st = do
   traverse_ showNotification $ st ^. asNotifications
   let
     s = st ^. asState
@@ -56,9 +71,15 @@ updateView v st = do
     todayPomodoros = sumOf (sTodayPomodors . folded . pdLen) s
     spentSeconds = currentPomodor + todayPomodoros
     timeSpent = formatTimeDiff $ spentSeconds
+    pbuf = case s ^. sCounting of
+      Waiting             -> pbs ^. pInit
+      PomodoroCounting {} -> pbs ^. pPomodoro
+      PauseCounting {}    -> pbs ^. pPause
   labelSetText (v ^. vCounter) counterText
   labelSetText (v ^. vTimeSpent) timeSpent
   entrySetText (v ^. vTags) $ T.unwords $ s ^. sTags
+  statusIconSetFromPixbuf (v ^. vStatusIcon) pbuf
+  statusIconSetTooltipText (v ^. vStatusIcon) $ Just counterText
   where
     showNotification = \case
       PomodoroFinish ->
@@ -66,16 +87,16 @@ updateView v st = do
       PauseFinish ->
         void $ rawSystem "notify-send" ["-t", "0", "Go to work, lazy ass!"]
 
-newController :: View -> IO Controller
-newController v = do
+newController :: View -> Pixbufs -> IO Controller
+newController v pbs = do
   m <- newManager defaultManagerSettings
   let
     baseUri = BaseUrl Http "127.0.0.1" 1338 "" -- FIXME: get from params
     env = ClientEnv m baseUri
   return $ Controller
-    { _cStartPomodoro = runClientM startPomodoro env >>= either print (updateView v)
-    , _cStartPause = runClientM startPause env >>= either print (updateView v)
-    , _cTick = runClientM status env >>= either print (updateView v)
+    { _cStartPomodoro = runClientM startPomodoro env >>= either print (updateView v pbs)
+    , _cStartPause = runClientM startPause env >>= either print (updateView v pbs)
+    , _cTick = runClientM status env >>= either print (updateView v pbs)
     }
 
 connectSignals :: View -> Controller -> IO ()
