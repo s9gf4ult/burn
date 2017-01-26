@@ -75,11 +75,12 @@ updateView v pbs st = do
       Waiting             -> pbs ^. pInit
       PomodoroCounting {} -> pbs ^. pPomodoro
       PauseCounting {}    -> pbs ^. pPause
-  labelSetText (v ^. vCounter) counterText
-  labelSetText (v ^. vTimeSpent) timeSpent
-  entrySetText (v ^. vTags) $ T.unwords $ s ^. sTags
-  statusIconSetFromPixbuf (v ^. vStatusIcon) pbuf
-  statusIconSetTooltipText (v ^. vStatusIcon) $ Just counterText
+  postGUISync $ do
+    labelSetText (v ^. vCounter) counterText
+    labelSetText (v ^. vTimeSpent) timeSpent
+    entrySetText (v ^. vTags) $ T.unwords $ s ^. sTags
+    statusIconSetFromPixbuf (v ^. vStatusIcon) pbuf
+    statusIconSetTooltipText (v ^. vStatusIcon) $ Just counterText
   where
     showNotification = \case
       PomodoroFinish ->
@@ -93,10 +94,12 @@ newController v pbs = do
   let
     baseUri = BaseUrl Http "127.0.0.1" 1338 "" -- FIXME: get from params
     env = ClientEnv m baseUri
+    method clientCall = void $ forkIO $ do
+      runClientM clientCall env >>= either print (updateView v pbs)
   return $ Controller
-    { _cStartPomodoro = runClientM startPomodoro env >>= either print (updateView v pbs)
-    , _cStartPause = runClientM startPause env >>= either print (updateView v pbs)
-    , _cTick = runClientM status env >>= either print (updateView v pbs)
+    { _cStartPomodoro = method startPomodoro
+    , _cStartPause    = method startPause
+    , _cTick          = method status
     }
 
 connectSignals :: View -> Controller -> IO ()
