@@ -42,7 +42,7 @@ instance Default Burn where
 
 data State = State
   { _sTags          :: ![Text]
-  , _sTodayPomodors :: ![PomodoroData]
+  , _sTodayPomodors :: ![PomodoroData UTCTime]
     -- ^ List of today's counted pomodoros
   , _sBurn          :: !Burn
   } deriving (Show)
@@ -66,12 +66,12 @@ data Message = Message
 
 makeLenses ''Message
 
-data Action
-  = SavePomodoro PomodoroData
+data Action date
+  = SavePomodoro (PomodoroData date)
   | DayEnd
   | NotifyPomodoroFinished
   | NotifyPauseFinished
-  deriving (Eq, Ord, Show)
+  deriving (Eq, Ord, Show, Functor, Foldable, Traversable)
 
 makePrisms ''Action
 
@@ -95,7 +95,7 @@ instance Default Settings where
     }
 
 -- | Handles message and transforms state
-process :: Settings -> Message -> State -> (State, [Action])
+process :: Settings -> Message -> State -> (State, [Action UTCTime])
 process s msg state =
   let
     (newB, actions) = processBurn s msg (state ^. sTags) (state ^. sBurn)
@@ -111,7 +111,7 @@ processTags msg tags = case msg ^. mEvent of
   SetTags newTags -> newTags
   _               -> tags
 
-processCounted :: [Action] -> [PomodoroData] -> [PomodoroData]
+processCounted :: [Action UTCTime] -> [PomodoroData UTCTime] -> [PomodoroData UTCTime]
 processCounted actions = (<> (actions ^.. folded . _SavePomodoro))
 
 processBurn
@@ -119,7 +119,7 @@ processBurn
   -> Message
   -> [Text]                     -- ^ Current tags
   -> Burn
-  -> (Burn, [Action])
+  -> (Burn, [Action UTCTime])
 processBurn s (Message now evt) tags burn = case evt of
   Tick -> case burn of
     StartPos -> (StartPos, [])
@@ -189,7 +189,7 @@ processBurn s (Message now evt) tags burn = case evt of
         in (PomCounting now c, [SavePomodoro pomodoro])
     b -> (b, [])
   where
-    tickCount :: Action -> Counting -> (Counting, [Action])
+    tickCount :: Action UTCTime -> Counting -> (Counting, [Action UTCTime])
     tickCount stopAction c =
       let
         passed = diffUTCTime now $ c ^. cStarted

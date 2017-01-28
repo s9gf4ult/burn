@@ -25,7 +25,10 @@ library
                      , text
                      , time
   default-extensions: DataKinds
+                    , DeriveFoldable
+                    , DeriveFunctor
                     , DeriveGeneric
+                    , DeriveTraversable
                     , GeneralizedNewtypeDeriving
                     , TemplateHaskell
                     , TypeOperators

@@ -40,6 +40,9 @@ library
                , transformers-base
                , warp
   default-extensions: DataKinds
+                    , DeriveFoldable
+                    , DeriveFunctor
+                    , DeriveTraversable
                     , LambdaCase
                     , MultiWayIf
                     , TemplateHaskell

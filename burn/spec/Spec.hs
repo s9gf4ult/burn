@@ -31,7 +31,7 @@ runSIO = void . flip runStateT def
 mm :: NominalDiffTime -> NominalDiffTime
 mm = (* 60)
 
-spend :: NominalDiffTime -> SIO [Action]
+spend :: NominalDiffTime -> SIO [Action UTCTime]
 spend diff = do
   tt <- for ticks $ \tick -> do
     res <- send Tick
@@ -46,7 +46,7 @@ spend diff = do
 spend' :: NominalDiffTime -> SIO ()
 spend' = void . spend
 
-send :: Event -> SIO [Action]
+send :: Event -> SIO [Action UTCTime]
 send evt = do
   now <- use sNow
   let msg = Message now evt
@@ -71,20 +71,20 @@ pomodoroLenShould expected = do
   pomLen <- preuse $ sState . sBurn . _PomCounting . _2 . cLen
   liftBase $ assertEqual "Pomodoro should be: " (Just expected) pomLen
 
-pomodoroSaved :: NominalDiffTime -> [Action] -> SIO ()
+pomodoroSaved :: NominalDiffTime -> [Action UTCTime] -> SIO ()
 pomodoroSaved expected a = do
   let plen = a ^.. folded . _SavePomodoro . pdLen
   liftBase $ assertEqual "Saved pomodoro length: " [expected] plen
 
-pomodoroFinished :: [Action] -> SIO ()
+pomodoroFinished :: [Action UTCTime] -> SIO ()
 pomodoroFinished =
   liftBase . assertEqual "Pomodoro finished action: " [NotifyPomodoroFinished]
 
-pauseFinished :: [Action] -> SIO ()
+pauseFinished :: [Action UTCTime] -> SIO ()
 pauseFinished =
   liftBase . assertEqual "Pause finished action: " [NotifyPauseFinished]
 
-emptyActions :: [Action] -> SIO ()
+emptyActions :: [Action UTCTime] -> SIO ()
 emptyActions =
   liftBase . assertEqual "No actions: " []
 

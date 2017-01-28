@@ -59,23 +59,33 @@ instance FromField UTCTime where
 instance ToField UTCTime where
   toField utc = toField $ utcTimeToPOSIXSeconds utc
 
+iso8601 :: String
+iso8601 = iso8601DateFormat $ Just "%H:%M:%S%Q%z"
 
-data PomodoroData = PomodoroData
-  { _pdStarted :: !UTCTime
+instance FromField ZonedTime where
+  parseField f = do
+    t <- parseField f
+    parseTimeM True defaultTimeLocale iso8601 t
+
+instance ToField ZonedTime where
+  toField = toField . formatTime defaultTimeLocale iso8601
+
+data PomodoroData date = PomodoroData
+  { _pdStarted :: !date
   , _pdLen     :: !NominalDiffTime
   , _pdTags    :: !Tags
-  } deriving (Eq, Ord, Show, Generic)
+  } deriving (Eq, Ord, Show, Generic, Functor, Foldable, Traversable)
 
 makeLenses ''PomodoroData
 deriveJSON defaultOptions ''PomodoroData
-instance FromRecord PomodoroData
-instance ToRecord PomodoroData
+instance (FromField a) => FromRecord (PomodoroData a)
+instance (ToField a) => ToRecord (PomodoroData a)
 
 data State = State
   { _sTags          :: ![Text]
-  , _sTodayPomodors :: ![PomodoroData]
+  , _sTodayPomodors :: ![PomodoroData ZonedTime]
   , _sCounting      :: !WhatCounted
-  } deriving (Eq, Show)
+  } deriving (Show)
 
 makeLenses ''State
 deriveJSON defaultOptions ''State
@@ -83,7 +93,7 @@ deriveJSON defaultOptions ''State
 data Status = Status
   { _asNotifications :: ![Notification]
   , _asState         :: !State
-  } deriving (Eq, Show)
+  } deriving (Show)
 
 makeLenses ''Status
 deriveJSON defaultOptions ''Status

@@ -1,5 +1,6 @@
 module Burn.Server where
 
+import Burn.API (pdStarted)
 import Burn.State
 import Control.Concurrent.STM
 import Control.Lens
@@ -45,18 +46,19 @@ handleMessage
 handleMessage evt p = liftBase $ do
   now <- getCurrentTime
   let msg = Message now evt
-  (settings, res@(_, actions)) <- atomically $ do
+  (settings, (newSt, actions)) <- atomically $ do
     state <- readTVar $ p ^. pState
     settings <- readTVar $ p ^. pSettings
     let res@(newSt, _) = process settings msg state
     writeTVar (p ^. pState) newSt
     return (settings, res)
   print evt
-  savePomodoros (settings ^. sDataFile) actions
-  let reply = mkStatus now res
+  zActions <- (traversed . _SavePomodoro . pdStarted) utcToLocalZonedTime actions
+  savePomodoros (settings ^. sDataFile) zActions
+  let reply = mkStatus now (newSt, zActions)
   return reply
 
-savePomodoros :: FilePath -> [Action] -> IO ()
+savePomodoros :: FilePath -> [Action ZonedTime] -> IO ()
 savePomodoros fp' actions = do
   fp <- canonicalizePath fp'
   let pomodoros = encode $ actions ^.. folded . _SavePomodoro
@@ -76,16 +78,10 @@ setTags p tags = handleMessage (SetTags tags) p
 status :: Payload -> Server A.StatusAPI
 status = handleMessage Tick
 
-mkStatus :: UTCTime -> (State, [Action]) -> A.Status
-mkStatus now (state, actions) = A.Status
-  { A._asNotifications = catMaybes $ map toNotif actions
-  , A._asState         = A.State
-    { A._sTags          = state ^. sTags
-    , A._sTodayPomodors = state ^. sTodayPomodors
-    , A._sCounting      = counting
-    }
-  }
-  where
+mkStatus :: UTCTime -> (State, [Action ZonedTime]) -> A.Status
+mkStatus now (state, actions) =
+  let
+    pomodors = actions ^.. folded . _SavePomodoro
     toNotif = \case
       NotifyPomodoroFinished -> Just A.PomodoroFinish
       NotifyPauseFinished    -> Just A.PauseFinish
@@ -100,3 +96,12 @@ mkStatus now (state, actions) = A.Status
          { A._cPassed = passed
          , A._cLen = c ^. cLen
          }
+    result = A.Status
+      { A._asNotifications = catMaybes $ map toNotif actions
+      , A._asState         = A.State
+        { A._sTags          = state ^. sTags
+        , A._sTodayPomodors = state ^. sTodayPomodors
+        , A._sCounting      = counting
+        }
+      }
+  in result

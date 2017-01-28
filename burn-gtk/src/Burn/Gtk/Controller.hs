@@ -60,6 +60,7 @@ formatTimeDiff (truncate -> seconds) =
 updateView :: View -> Pixbufs -> Status -> IO ()
 updateView v pbs st = do
   traverse_ showNotification $ st ^. asNotifications
+  print $ st ^. asState
   let
     s = st ^. asState
     formatCounting c = (formatTimeDiff $ c ^. cPassed) <> "/" <> (formatTimeDiff $ c ^. cLen)
