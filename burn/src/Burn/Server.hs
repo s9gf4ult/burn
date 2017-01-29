@@ -55,7 +55,7 @@ handleMessage evt p = liftBase $ do
   print evt
   zActions <- (traversed . _SavePomodoro . pdStarted) utcToLocalZonedTime actions
   savePomodoros (settings ^. sDataFile) zActions
-  let reply = mkStatus now (newSt, zActions)
+  reply <- mkStatus now (newSt, zActions)
   return reply
 
 savePomodoros :: FilePath -> [Action ZonedTime] -> IO ()
@@ -78,8 +78,10 @@ setTags p tags = handleMessage (SetTags tags) p
 status :: Payload -> Server A.StatusAPI
 status = handleMessage Tick
 
-mkStatus :: UTCTime -> (State, [Action ZonedTime]) -> A.Status
-mkStatus now (state, actions) =
+mkStatus :: UTCTime -> (State, [Action ZonedTime]) -> IO A.Status
+mkStatus now (state, actions) = do
+  pomodors <- (traversed . pdStarted) utcToLocalZonedTime
+    $ state ^. sTodayPomodors
   let
     pomodors = actions ^.. folded . _SavePomodoro
     toNotif = \case
@@ -100,8 +102,8 @@ mkStatus now (state, actions) =
       { A._asNotifications = catMaybes $ map toNotif actions
       , A._asState         = A.State
         { A._sTags          = state ^. sTags
-        , A._sTodayPomodors = state ^. sTodayPomodors
+        , A._sTodayPomodors = pomodors
         , A._sCounting      = counting
         }
       }
-  in result
+  return result
