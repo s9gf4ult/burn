@@ -1,9 +1,9 @@
 module Burn.API
   ( module Burn.API
-  , module Burn.API.Types
+  , module Burn.Types
   ) where
 
-import Burn.API.Types
+import Burn.Types
 import Data.Proxy
 import Data.Text as T
 import Servant.API

@@ -1,4 +1,4 @@
-module Burn.API.Types where
+module Burn.Types where
 
 import Control.Lens
 import Data.Aeson

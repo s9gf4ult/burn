@@ -1,7 +1,6 @@
 extra-package-dbs: []
 packages:
   - burn
-  - burn-api
   - burn-cli
   - burn-gtk
 extra-deps:

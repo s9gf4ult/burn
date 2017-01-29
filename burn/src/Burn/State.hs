@@ -1,6 +1,6 @@
 module Burn.State where
 
-import Burn.API.Types (PomodoroData(..), Tags(..))
+import Burn.Types (PomodoroData(..), Tags(..))
 import Control.Lens
 import Data.Aeson
 import Data.Aeson.TH

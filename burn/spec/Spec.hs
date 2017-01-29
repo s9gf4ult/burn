@@ -1,7 +1,7 @@
 module Main where
 
-import Burn.API.Types (pdLen)
 import Burn.State
+import Burn.Types (pdLen)
 import Control.Arrow
 import Control.Lens
 import Control.Monad.Base
