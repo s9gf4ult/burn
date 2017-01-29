@@ -1,7 +1,8 @@
 module Burn.Server where
 
-import Burn.API (pdStarted)
+import Burn.API
 import Burn.State
+import Burn.Types
 import Control.Concurrent.STM
 import Control.Lens
 import Control.Monad.Base
@@ -14,7 +15,6 @@ import Network.Wai.Handler.Warp (run)
 import Servant
 import System.Directory
 
-import qualified Burn.API as A
 import qualified Data.ByteString.Lazy as BL
 
 data Payload = Payload
@@ -30,9 +30,9 @@ initPayload = Payload <$> newTVarIO def <*> newTVarIO def
 burn :: IO ()
 burn = do
   p <- initPayload
-  run 1338 $ serve A.burnAPI $ handlers p
+  run 1338 $ serve burnAPI $ handlers p
 
-handlers :: Payload -> Server A.BurnAPI
+handlers :: Payload -> Server BurnAPI
 handlers p
   =    startPomodoro p
   :<|> startPause p
@@ -42,7 +42,7 @@ handlers p
 handleMessage
   :: Event
   -> Payload
-  -> ExceptT ServantErr IO A.Status
+  -> ExceptT ServantErr IO State
 handleMessage evt p = liftBase $ do
   now <- getCurrentTime
   let msg = Message now evt
@@ -53,10 +53,9 @@ handleMessage evt p = liftBase $ do
     writeTVar (p ^. pState) newSt
     return (settings, res)
   print evt
-  zActions <- (traversed . _SavePomodoro . pdStarted) utcToLocalZonedTime actions
+  zActions <- (traversed . traversed) utcToLocalZonedTime actions
   savePomodoros (settings ^. sDataFile) zActions
-  reply <- mkStatus now (newSt, zActions)
-  return reply
+  return newSt
 
 savePomodoros :: FilePath -> [Action ZonedTime] -> IO ()
 savePomodoros fp' actions = do
@@ -66,44 +65,14 @@ savePomodoros fp' actions = do
 
 
 
-startPomodoro :: Payload -> Server A.StartPomodoroAPI
+startPomodoro :: Payload -> Server StartPomodoroAPI
 startPomodoro = handleMessage StartPomodoro
 
-startPause :: Payload -> Server A.StartPauseAPI
+startPause :: Payload -> Server StartPauseAPI
 startPause = handleMessage StartPause
 
-setTags :: Payload -> Server A.SetTagsAPI
+setTags :: Payload -> Server SetTagsAPI
 setTags p tags = handleMessage (SetTags tags) p
 
-status :: Payload -> Server A.StatusAPI
+status :: Payload -> Server TickAPI
 status = handleMessage Tick
-
-mkStatus :: UTCTime -> (State, [Action ZonedTime]) -> IO A.Status
-mkStatus now (state, actions) = do
-  pomodors <- (traversed . pdStarted) utcToLocalZonedTime
-    $ state ^. sTodayPomodors
-  let
-    pomodors = actions ^.. folded . _SavePomodoro
-    toNotif = \case
-      NotifyPomodoroFinished -> Just A.PomodoroFinish
-      NotifyPauseFinished    -> Just A.PauseFinish
-      _                      -> Nothing
-    counting = case state ^. sBurn of
-      StartPos -> A.Waiting
-      PomCounting _ c -> A.PomodoroCounting $ toApiCounting c
-      PauseCounting c -> A.PauseCounting $ toApiCounting c
-    toApiCounting c =
-      let passed = diffUTCTime now $ c ^. cStarted
-      in A.Counting
-         { A._cPassed = passed
-         , A._cLen = c ^. cLen
-         }
-    result = A.Status
-      { A._asNotifications = catMaybes $ map toNotif actions
-      , A._asState         = A.State
-        { A._sTags          = state ^. sTags
-        , A._sTodayPomodors = pomodors
-        , A._sCounting      = counting
-        }
-      }
-  return result

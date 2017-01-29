@@ -5,10 +5,10 @@ import Data.Text as T
 import Servant.API
 import Servant.Client
 
-startPomodoro :: ClientM Status
-startPause    :: ClientM Status
-setTags       :: [Text] -> ClientM Status
-status        :: ClientM Status
+startPomodoro :: ClientM State
+startPause    :: ClientM State
+setTags       :: [Text] -> ClientM State
+status        :: ClientM State
 (startPomodoro
  :<|> startPause
  :<|> setTags

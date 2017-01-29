@@ -1,7 +1,7 @@
 module Main where
 
 import Burn.State
-import Burn.Types (pdLen)
+import Burn.Types
 import Control.Arrow
 import Control.Lens
 import Control.Monad.Base
@@ -68,7 +68,7 @@ pauseLenShould expected = do
 
 pomodoroLenShould :: NominalDiffTime -> SIO ()
 pomodoroLenShould expected = do
-  pomLen <- preuse $ sState . sBurn . _PomCounting . _2 . cLen
+  pomLen <- preuse $ sState . sBurn . _PomodoroCounting . _2 . cLen
   liftBase $ assertEqual "Pomodoro should be: " (Just expected) pomLen
 
 pomodoroSaved :: NominalDiffTime -> [Action UTCTime] -> SIO ()

@@ -12,7 +12,7 @@ import Data.Maybe
 import Data.Monoid
 import Data.Text as T
 import Data.Time
-import Formatting
+import Formatting hiding (now)
 import Graphics.UI.Gtk
 import Network.HTTP.Client
 import Servant.Client
@@ -57,22 +57,30 @@ formatTimeDiff (truncate -> seconds) =
       | otherwise -> ms
   in res
 
-updateView :: View -> Pixbufs -> Status -> IO ()
-updateView v pbs st = do
-  traverse_ showNotification $ st ^. asNotifications
-  print $ st ^. asState
+updateView :: View -> Pixbufs -> State -> IO ()
+updateView v pbs s = do
+  -- traverse_ showNotification $ st ^. asNotifications
+  print s
+  now <- getCurrentTime         -- FIXME: get from server
   let
-    s = st ^. asState
-    formatCounting c = (formatTimeDiff $ c ^. cPassed) <> "/" <> (formatTimeDiff $ c ^. cLen)
-    counterText = case s ^. sCounting of
+    formatCounting c =
+      let
+        passed = formatTimeDiff $ diffUTCTime now $ c ^. cStarted
+        len = formatTimeDiff $ c ^. cLen
+      in passed <> "/" <> len
+    counterText = case s ^. sBurn of
       Waiting -> "--:--"
-      PomodoroCounting c -> "P " <> formatCounting c
+      PomodoroCounting _ c -> "P " <> formatCounting c
       PauseCounting c -> "  " <> formatCounting c
-    currentPomodor = fromMaybe 0 $ s ^? sCounting . _PomodoroCounting . cPassed
+    currentPomodor =
+      let
+        mPassed = s ^? sBurn . _PomodoroCounting . _2 . cStarted
+          . to (diffUTCTime now)
+      in fromMaybe 0 mPassed
     todayPomodoros = sumOf (sTodayPomodors . folded . pdLen) s
     spentSeconds = currentPomodor + todayPomodoros
     timeSpent = formatTimeDiff $ spentSeconds
-    pbuf = case s ^. sCounting of
+    pbuf = case s ^. sBurn of
       Waiting             -> pbs ^. pInit
       PomodoroCounting {} -> pbs ^. pPomodoro
       PauseCounting {}    -> pbs ^. pPause
@@ -83,11 +91,12 @@ updateView v pbs st = do
     statusIconSetFromPixbuf (v ^. vStatusIcon) pbuf
     statusIconSetTooltipText (v ^. vStatusIcon) $ Just counterText
   where
-    showNotification = \case
-      PomodoroFinish ->
-        void $ rawSystem "notify-send" ["-t", "0", "Take a break!"]
-      PauseFinish ->
-        void $ rawSystem "notify-send" ["-t", "0", "Go to work, lazy ass!"]
+    -- FIXME: turn on
+    -- showNotification = \case
+    --   PomodoroFinish ->
+    --     void $ rawSystem "notify-send" ["-t", "0", "Take a break!"]
+    --   PauseFinish ->
+    --     void $ rawSystem "notify-send" ["-t", "0", "Go to work, lazy ass!"]
 
 newController :: View -> Pixbufs -> IO Controller
 newController v pbs = do

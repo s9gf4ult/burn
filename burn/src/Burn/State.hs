@@ -1,6 +1,6 @@
 module Burn.State where
 
-import Burn.Types (PomodoroData(..), Tags(..))
+import Burn.Types
 import Control.Lens
 import Data.Aeson
 import Data.Aeson.TH
@@ -14,85 +14,6 @@ import Data.Time
 import qualified Data.Map.Strict as M
 import qualified Data.Text as T
 
-data Counting = Counting
-  { _cLen      :: NominalDiffTime
-  , _cStarted  :: UTCTime
-  , _cFinished :: Bool
-    -- ^ True when stop action is sent
-  } deriving (Show)
-
-makeLenses ''Counting
-
-data Burn
-  = StartPos
-  | PomCounting
-    { _bSavedFrom :: UTCTime
-    , _bCounting  :: Counting
-    }
-  | PauseCounting
-    { _bCounting :: Counting
-    }
-  deriving (Show)
-
-makePrisms ''Burn
-makeLenses ''Burn
-
-instance Default Burn where
-  def = StartPos
-
-data State = State
-  { _sTags          :: ![Text]
-  , _sTodayPomodors :: ![PomodoroData UTCTime]
-    -- ^ List of today's counted pomodoros
-  , _sBurn          :: !Burn
-  } deriving (Show)
-
-makeLenses ''State
-
-instance Default State where
-  def = State [] def def
-
-data Event
-  = Tick
-  | StartPomodoro
-  | StartPause
-  | SetTags [Text]
-  deriving (Show)
-
-data Message = Message
-  { _mTime  :: UTCTime
-  , _mEvent :: Event
-  } deriving (Show)
-
-makeLenses ''Message
-
-data Action date
-  = SavePomodoro (PomodoroData date)
-  | DayEnd
-  | NotifyPomodoroFinished
-  | NotifyPauseFinished
-  deriving (Eq, Ord, Show, Functor, Foldable, Traversable)
-
-makePrisms ''Action
-
-data Settings = Settings
-  { _sPomodoroLen :: !NominalDiffTime
-  , _sPauseLen    :: !NominalDiffTime
-  , _sLongPause   :: !NominalDiffTime
-  , _sDayEnd      :: !DiffTime
-  , _sDataFile    :: !FilePath
-  } deriving (Eq, Ord, Show)
-
-makeLenses ''Settings
-
-instance Default Settings where
-  def = Settings
-    { _sPomodoroLen = 25 * 60
-    , _sPauseLen    = 5 * 60
-    , _sLongPause   = 15 * 60
-    , _sDayEnd      = secondsToDiffTime $ 5 * 3600 -- 5 am is a day end
-    , _sDataFile    = "/home/razor/burn/pomodoros.csv" -- FIXME: make configurable
-    }
 
 -- | Handles message and transforms state
 process :: Settings -> Message -> State -> (State, [Action UTCTime])
@@ -122,21 +43,21 @@ processBurn
   -> (Burn, [Action UTCTime])
 processBurn s (Message now evt) tags burn = case evt of
   Tick -> case burn of
-    StartPos -> (StartPos, [])
-    PomCounting lastSaved c ->
-      over _1 (PomCounting lastSaved)
+    Waiting -> (Waiting, [])
+    PomodoroCounting lastSaved c ->
+      over _1 (PomodoroCounting lastSaved)
       $ tickCount NotifyPomodoroFinished c
     PauseCounting c ->
       over _1 PauseCounting $ tickCount NotifyPauseFinished c
   StartPomodoro -> case burn of
-    StartPos ->
+    Waiting ->
       let
-        res = PomCounting now $ Counting
+        res = PomodoroCounting now $ Counting
           { _cStarted = now
           , _cLen = s ^. sPomodoroLen
           , _cFinished = False }
       in (res, [])
-    b@(PomCounting {}) -> (b, [])
+    b@(PomodoroCounting {}) -> (b, [])
     PauseCounting c ->
       let
         passed = diffUTCTime now $ c ^. cStarted
@@ -149,16 +70,16 @@ processBurn s (Message now evt) tags burn = case evt of
           { _cLen      = pomLen
           , _cStarted  = now
           , _cFinished = pomLen <= 0 }
-      in (PomCounting now newC, [])
+      in (PomodoroCounting now newC, [])
   StartPause -> case burn of
-    StartPos ->
+    Waiting ->
       let
         res = PauseCounting $ Counting
           { _cStarted = now
           , _cLen = s ^. sPauseLen
           , _cFinished = False }
       in (res, [])
-    PomCounting lastSaved' c ->
+    PomodoroCounting lastSaved' c ->
       let
         passed = diffUTCTime now $ c ^. cStarted
         stdPom = s ^. sPomodoroLen
@@ -178,7 +99,7 @@ processBurn s (Message now evt) tags burn = case evt of
       in (PauseCounting newC, [SavePomodoro pomodoro])
     PauseCounting c -> (PauseCounting c, [])
   SetTags newTags -> case burn of
-    PomCounting lastSaved' c
+    PomodoroCounting lastSaved' c
       | newTags /= tags ->
         let
           lastSaved = max lastSaved' $ c ^. cStarted
@@ -186,7 +107,7 @@ processBurn s (Message now evt) tags burn = case evt of
             { _pdStarted = lastSaved
             , _pdLen = diffUTCTime now lastSaved
             , _pdTags = Tags tags }
-        in (PomCounting now c, [SavePomodoro pomodoro])
+        in (PomodoroCounting now c, [SavePomodoro pomodoro])
     b -> (b, [])
   where
     tickCount :: Action UTCTime -> Counting -> (Counting, [Action UTCTime])
