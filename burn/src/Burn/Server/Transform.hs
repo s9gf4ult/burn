@@ -1,4 +1,4 @@
-module Burn.State where
+module Burn.Server.Transform where
 
 import Burn.Types
 import Control.Lens

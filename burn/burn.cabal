@@ -20,8 +20,10 @@ library
   ghc-options: -Wall
   exposed-modules: Burn.API
                  , Burn.Client
+                 , Burn.Client.Query
                  , Burn.Server
-                 , Burn.State
+                 , Burn.Server.Handler
+                 , Burn.Server.Transform
                  , Burn.Types
   build-depends: aeson
                , base >= 4.6 && <= 5

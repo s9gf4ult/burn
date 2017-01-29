@@ -1,6 +1,6 @@
 module Main where
 
-import Burn.State
+import Burn.Server.Transform
 import Burn.Types
 import Control.Arrow
 import Control.Lens
