@@ -101,6 +101,7 @@ updateView v pbs s = do
 newController :: View -> Pixbufs -> IO Controller
 newController v pbs = do
   m <- newManager defaultManagerSettings
+  oldState <- newTVarIO Nothing
   let
     baseUri = BaseUrl Http "127.0.0.1" 1338 "" -- FIXME: get from params
     env = ClientEnv m baseUri

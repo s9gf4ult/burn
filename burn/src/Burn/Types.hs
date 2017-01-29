@@ -10,6 +10,15 @@ import Data.Time
 import Data.Time.Clock.POSIX
 import GHC.Generics (Generic)
 
+data Notification
+  = PomodoroFinished | PauseFinished
+  deriving (Eq, Ord, Show, Generic)
+
+makePrisms ''Notification
+deriveJSON
+  defaultOptions
+  ''Notification
+
 newtype Tags = Tags [Text]
   deriving (Eq, Ord, Show, Generic, FromJSON, ToJSON)
 

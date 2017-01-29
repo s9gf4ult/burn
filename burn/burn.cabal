@@ -21,6 +21,7 @@ library
   exposed-modules: Burn.API
                  , Burn.Client
                  , Burn.Client.Query
+                 , Burn.Client.State
                  , Burn.Server
                  , Burn.Server.Handler
                  , Burn.Server.Transform
