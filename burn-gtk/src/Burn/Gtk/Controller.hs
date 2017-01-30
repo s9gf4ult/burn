@@ -1,6 +1,7 @@
 module Burn.Gtk.Controller where
 
 import Burn.API
+import Control.Concurrent.STM
 import Burn.Client
 import Burn.Gtk.View
 import Control.Concurrent
@@ -57,11 +58,9 @@ formatTimeDiff (truncate -> seconds) =
       | otherwise -> ms
   in res
 
-updateView :: View -> Pixbufs -> State -> IO ()
-updateView v pbs s = do
-  -- traverse_ showNotification $ st ^. asNotifications
+updateView :: View -> Pixbufs -> UTCTime -> State -> IO ()
+updateView v pbs now s = do
   print s
-  now <- getCurrentTime         -- FIXME: get from server
   let
     formatCounting c =
       let
@@ -90,13 +89,6 @@ updateView v pbs s = do
     entrySetText (v ^. vTags) $ T.unwords $ s ^. sTags
     statusIconSetFromPixbuf (v ^. vStatusIcon) pbuf
     statusIconSetTooltipText (v ^. vStatusIcon) $ Just counterText
-  where
-    -- FIXME: turn on
-    -- showNotification = \case
-    --   PomodoroFinish ->
-    --     void $ rawSystem "notify-send" ["-t", "0", "Take a break!"]
-    --   PauseFinish ->
-    --     void $ rawSystem "notify-send" ["-t", "0", "Go to work, lazy ass!"]
 
 newController :: View -> Pixbufs -> IO Controller
 newController v pbs = do
@@ -106,12 +98,32 @@ newController v pbs = do
     baseUri = BaseUrl Http "127.0.0.1" 1338 "" -- FIXME: get from params
     env = ClientEnv m baseUri
     method clientCall = void $ forkIO $ do
-      runClientM clientCall env >>= either print (updateView v pbs)
+      resp <- runClientM clientCall env
+      case resp of
+        Left e -> print e
+        Right newSt -> do
+          now <- getCurrentTime         -- FIXME: get from server
+          updateView v pbs now newSt
+          notifs <- atomically $ do
+            oldSt <- readTVar oldState
+            writeTVar oldState $ Just newSt
+            return $ fromMaybe []
+              $ notifications <$> Just now <*> oldSt <*> Just newSt
+          traverse_ showNotification notifs
+
   return $ Controller
     { _cStartPomodoro = method startPomodoro
     , _cStartPause    = method startPause
     , _cTick          = method status
     }
+  where
+        -- FIXME: turn on
+    showNotification = \case
+      PomodoroFinished ->
+        void $ rawSystem "notify-send" ["-t", "0", "Take a break!"]
+      PauseFinished ->
+        void $ rawSystem "notify-send" ["-t", "0", "Go to work, lazy ass!"]
+
 
 connectSignals :: View -> Controller -> IO ()
 connectSignals v c = do

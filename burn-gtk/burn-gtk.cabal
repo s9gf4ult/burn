@@ -33,6 +33,7 @@ library
                , process
                , servant >= 0.9.1.1
                , servant-client >= 0.9.1.1
+               , stm
                , text
                , time
                , transformers-base
