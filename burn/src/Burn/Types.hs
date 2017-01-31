@@ -69,8 +69,6 @@ instance (ToField a) => ToRecord (PomodoroData a)
 data Counting = Counting
   { _cLen      :: NominalDiffTime
   , _cStarted  :: UTCTime
-  , _cFinished :: Bool
-    -- ^ True when stop action is sent
   } deriving (Show)
 
 makeLenses ''Counting
@@ -131,9 +129,9 @@ makeLenses ''Message
 
 data Action
   = SavePomodoro (PomodoroData UTCTime)
-  | DayEnd
-  | NotifyPomodoroFinished
-  | NotifyPauseFinished
+    -- ^ Command to save pomodoro
+  | ResetTimers
+    -- ^ Day is end so we must reset timers
   deriving (Eq, Ord, Show)
 
 makePrisms ''Action

@@ -50,8 +50,6 @@ spend diff = do
 spend' :: NominalDiffTime -> SIO ()
 spend' = void . spend
 
-dprint s a = liftBase $ putStrLn $  ">>> " ++ s ++ show a
-
 send :: Event -> SIO [Either Notification Action]
 send evt = do
   now <- use sNow

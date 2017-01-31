@@ -42,20 +42,14 @@ processBurn
   -> Burn
   -> (Burn, [Action])
 processBurn s (Message now evt) tags burn = case evt of
-  Tick -> case burn of
-    Waiting -> (Waiting, [])
-    PomodoroCounting lastSaved c ->
-      over _1 (PomodoroCounting lastSaved)
-      $ tickCount NotifyPomodoroFinished c
-    PauseCounting c ->
-      over _1 PauseCounting $ tickCount NotifyPauseFinished c
+  Tick -> (burn, [])
   StartPomodoro -> case burn of
     Waiting ->
       let
         res = PomodoroCounting now $ Counting
           { _cStarted = now
           , _cLen = s ^. sPomodoroLen
-          , _cFinished = False }
+          }
       in (res, [])
     b@(PomodoroCounting {}) -> (b, [])
     PauseCounting c ->
@@ -69,7 +63,7 @@ processBurn s (Message now evt) tags burn = case evt of
         newC = Counting
           { _cLen      = pomLen
           , _cStarted  = now
-          , _cFinished = pomLen <= 0 }
+          }
       in (PomodoroCounting now newC, [])
   StartPause -> case burn of
     Waiting ->
@@ -77,7 +71,7 @@ processBurn s (Message now evt) tags burn = case evt of
         res = PauseCounting $ Counting
           { _cStarted = now
           , _cLen = s ^. sPauseLen
-          , _cFinished = False }
+          }
       in (res, [])
     PomodoroCounting lastSaved' c ->
       let
@@ -90,7 +84,7 @@ processBurn s (Message now evt) tags burn = case evt of
         newC = Counting
           { _cStarted  = now
           , _cLen      = pauseLen
-          , _cFinished = pauseLen <= 0 }
+          }
         lastSaved = max lastSaved' (c ^. cStarted)
         pomodoro = PomodoroData
           { _pdStarted = lastSaved
@@ -109,15 +103,3 @@ processBurn s (Message now evt) tags burn = case evt of
             , _pdTags = Tags tags }
         in (PomodoroCounting now c, [SavePomodoro pomodoro])
     b -> (b, [])
-  where
-    tickCount :: Action -> Counting -> (Counting, [Action])
-    tickCount stopAction c =
-      let
-        passed = diffUTCTime now $ c ^. cStarted
-        overruned = passed >= (c ^. cLen)
-        actions =
-          if | c ^. cFinished -> []
-             | overruned -> [stopAction]
-             | otherwise -> []
-      in ( set cFinished overruned c
-         , actions )
