@@ -26,6 +26,7 @@ library
                  , Burn.Gtk.View
   build-depends: base >= 4.6 && < 5
                , burn
+               , data-default
                , formatting
                , gtk3
                , http-client

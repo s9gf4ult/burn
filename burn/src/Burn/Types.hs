@@ -129,12 +129,12 @@ data Message = Message
 
 makeLenses ''Message
 
-data Action date
-  = SavePomodoro (PomodoroData date)
+data Action
+  = SavePomodoro (PomodoroData UTCTime)
   | DayEnd
   | NotifyPomodoroFinished
   | NotifyPauseFinished
-  deriving (Eq, Ord, Show, Functor, Foldable, Traversable)
+  deriving (Eq, Ord, Show)
 
 makePrisms ''Action
 

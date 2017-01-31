@@ -53,15 +53,15 @@ handleMessage evt p = liftBase $ do
     writeTVar (p ^. pState) newSt
     return (settings, res)
   print evt
-  zActions <- (traversed . traversed) utcToLocalZonedTime actions
-  savePomodoros (settings ^. sDataFile) zActions
+  pomodors <- (traversed . traversed) utcToLocalZonedTime
+    $ actions ^.. folded . _SavePomodoro
+  savePomodoros (settings ^. sDataFile) pomodors
   return newSt
 
-savePomodoros :: FilePath -> [Action ZonedTime] -> IO ()
-savePomodoros fp' actions = do
+savePomodoros :: FilePath -> [PomodoroData ZonedTime] -> IO ()
+savePomodoros fp' pomodors = do
   fp <- canonicalizePath fp'
-  let pomodoros = encode $ actions ^.. folded . _SavePomodoro
-  BL.appendFile fp pomodoros
+  BL.appendFile fp $ encode pomodors
 
 
 

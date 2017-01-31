@@ -16,7 +16,7 @@ import qualified Data.Text as T
 
 
 -- | Handles message and transforms state
-process :: Settings -> Message -> State -> (State, [Action UTCTime])
+process :: Settings -> Message -> State -> (State, [Action])
 process s msg state =
   let
     (newB, actions) = processBurn s msg (state ^. sTags) (state ^. sBurn)
@@ -32,7 +32,7 @@ processTags msg tags = case msg ^. mEvent of
   SetTags newTags -> newTags
   _               -> tags
 
-processCounted :: [Action UTCTime] -> [PomodoroData UTCTime] -> [PomodoroData UTCTime]
+processCounted :: [Action] -> [PomodoroData UTCTime] -> [PomodoroData UTCTime]
 processCounted actions = (<> (actions ^.. folded . _SavePomodoro))
 
 processBurn
@@ -40,7 +40,7 @@ processBurn
   -> Message
   -> [Text]                     -- ^ Current tags
   -> Burn
-  -> (Burn, [Action UTCTime])
+  -> (Burn, [Action])
 processBurn s (Message now evt) tags burn = case evt of
   Tick -> case burn of
     Waiting -> (Waiting, [])
@@ -110,7 +110,7 @@ processBurn s (Message now evt) tags burn = case evt of
         in (PomodoroCounting now c, [SavePomodoro pomodoro])
     b -> (b, [])
   where
-    tickCount :: Action UTCTime -> Counting -> (Counting, [Action UTCTime])
+    tickCount :: Action -> Counting -> (Counting, [Action])
     tickCount stopAction c =
       let
         passed = diffUTCTime now $ c ^. cStarted

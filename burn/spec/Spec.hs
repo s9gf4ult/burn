@@ -1,5 +1,6 @@
 module Main where
 
+import Burn.Client.State
 import Burn.Server.Transform
 import Burn.Types
 import Control.Arrow
@@ -15,13 +16,16 @@ import Test.Tasty.HUnit
 data S = S
   { _sNow      :: !UTCTime
   , _sState    :: !State
+  , _sClient   :: !ClientState
   , _sSettings :: !Settings
   }
 
 instance Default S where
-  def = S (UTCTime (fromGregorian 2020 10 10) 0) def def
+  def = S (UTCTime (fromGregorian 2020 10 10) 0) def def def
 
 makeLenses ''S
+
+type AcNot = Either Notification Action
 
 type SIO = StateT S IO
 
@@ -31,7 +35,7 @@ runSIO = void . flip runStateT def
 mm :: NominalDiffTime -> NominalDiffTime
 mm = (* 60)
 
-spend :: NominalDiffTime -> SIO [Action UTCTime]
+spend :: NominalDiffTime -> SIO [AcNot]
 spend diff = do
   tt <- for ticks $ \tick -> do
     res <- send Tick
@@ -46,12 +50,17 @@ spend diff = do
 spend' :: NominalDiffTime -> SIO ()
 spend' = void . spend
 
-send :: Event -> SIO [Action UTCTime]
+dprint s a = liftBase $ putStrLn $  ">>> " ++ s ++ show a
+
+send :: Event -> SIO [Either Notification Action]
 send evt = do
   now <- use sNow
   let msg = Message now evt
-  s <- use sSettings
-  zoom sState $ state $ (snd &&& fst) . process s msg
+  s         <- use sSettings
+  actions   <- zoom sState $ state $ (snd &&& fst) . process s msg
+  newServer <- use sState
+  notifs    <- zoom sClient $ state $ (snd &&& fst) . updateState now newServer
+  return $ (map Left notifs) ++ (map Right actions)
 
 send' :: Event -> SIO ()
 send' = void . send
@@ -71,20 +80,23 @@ pomodoroLenShould expected = do
   pomLen <- preuse $ sState . sBurn . _PomodoroCounting . _2 . cLen
   liftBase $ assertEqual "Pomodoro should be: " (Just expected) pomLen
 
-pomodoroSaved :: NominalDiffTime -> [Action UTCTime] -> SIO ()
+pomodoroSaved :: NominalDiffTime -> [AcNot] -> SIO ()
 pomodoroSaved expected a = do
-  let plen = a ^.. folded . _SavePomodoro . pdLen
+  let plen = a ^.. folded . _Right . _SavePomodoro . pdLen
   liftBase $ assertEqual "Saved pomodoro length: " [expected] plen
 
-pomodoroFinished :: [Action UTCTime] -> SIO ()
-pomodoroFinished =
-  liftBase . assertEqual "Pomodoro finished action: " [NotifyPomodoroFinished]
+pomodoroFinished :: [AcNot] -> SIO ()
+pomodoroFinished = expectNotification PomodoroFinished
 
-pauseFinished :: [Action UTCTime] -> SIO ()
-pauseFinished =
-  liftBase . assertEqual "Pause finished action: " [NotifyPauseFinished]
+pauseFinished :: [AcNot] -> SIO ()
+pauseFinished = expectNotification PauseFinished
 
-emptyActions :: [Action UTCTime] -> SIO ()
+expectNotification :: Notification -> [AcNot] -> SIO ()
+expectNotification n a = do
+  let nots = a ^.. folded . _Left
+  liftBase $ assertEqual "Pause finished action: " [n] nots
+
+emptyActions :: [AcNot] -> SIO ()
 emptyActions =
   liftBase . assertEqual "No actions: " []
 

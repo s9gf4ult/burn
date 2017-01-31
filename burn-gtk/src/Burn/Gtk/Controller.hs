@@ -1,13 +1,14 @@
 module Burn.Gtk.Controller where
 
 import Burn.API
-import Control.Concurrent.STM
 import Burn.Client
 import Burn.Gtk.View
 import Control.Concurrent
+import Control.Concurrent.STM
 import Control.Lens
 import Control.Monad
 import Control.Monad.Base
+import Data.Default
 import Data.Foldable
 import Data.Maybe
 import Data.Monoid
@@ -93,7 +94,7 @@ updateView v pbs now s = do
 newController :: View -> Pixbufs -> IO Controller
 newController v pbs = do
   m <- newManager defaultManagerSettings
-  oldState <- newTVarIO Nothing
+  clientState <- newTVarIO def
   let
     baseUri = BaseUrl Http "127.0.0.1" 1338 "" -- FIXME: get from params
     env = ClientEnv m baseUri
@@ -105,10 +106,10 @@ newController v pbs = do
           now <- getCurrentTime         -- FIXME: get from server
           updateView v pbs now newSt
           notifs <- atomically $ do
-            oldSt <- readTVar oldState
-            writeTVar oldState $ Just newSt
-            return $ fromMaybe []
-              $ notifications <$> Just now <*> oldSt <*> Just newSt
+            oldClient <- readTVar clientState
+            let (newClient, notifs) = updateState now newSt oldClient
+            writeTVar clientState newClient
+            return notifs
           traverse_ showNotification notifs
 
   return $ Controller
@@ -117,7 +118,6 @@ newController v pbs = do
     , _cTick          = method status
     }
   where
-        -- FIXME: turn on
     showNotification = \case
       PomodoroFinished ->
         void $ rawSystem "notify-send" ["-t", "0", "Take a break!"]
