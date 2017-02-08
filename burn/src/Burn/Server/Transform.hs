@@ -9,6 +9,7 @@ import Data.Default
 import Data.Foldable
 import Data.List as L
 import Data.Map.Strict (Map)
+import Data.Maybe
 import Data.Monoid
 import Data.Text (Text)
 import Data.Time
@@ -43,13 +44,16 @@ splitDaylyActions
   -> [Action]
   -> [Action]
 splitDaylyActions s tz prev now actions =
-  case timeBetween tz prev now (s ^. sDayEnd) of
-    Nothing -> actions
-    Just de ->
-      let pomodors = (actions ^.. folded . _SavePomodoro) >>= splitPomodoro de
-          f p = p ^. pdStarted >= de
-          (a, b) = break f pomodors
-      in map SavePomodoro a ++ [ResetTimers] ++ map SavePomodoro b
+  let
+    low = min prev $ fromMaybe prev
+      $ minimumOf (folded . _SavePomodoro . pdStarted) actions
+  in case timeBetween tz low now (s ^. sDayEnd) of
+       Nothing -> actions
+       Just de ->
+         let pomodors = (actions ^.. folded . _SavePomodoro) >>= splitPomodoro de
+             f p = p ^. pdStarted >= de
+             (a, b) = break f pomodors
+         in map SavePomodoro a ++ [ResetTimers] ++ map SavePomodoro b
 
 splitPomodoro :: UTCTime -> PomodoroData UTCTime -> [PomodoroData UTCTime]
 splitPomodoro de pd =
