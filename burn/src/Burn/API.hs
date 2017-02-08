@@ -18,13 +18,13 @@ burnAPI :: Proxy BurnAPI
 burnAPI = Proxy
 
 type StartPomodoroAPI
-  = "action" :> "start_pomodoro" :> Post '[JSON] State
+  = "action" :> "start_pomodoro" :> Post '[JSON] ServerState
 
 type StartPauseAPI
-  = "action" :> "start_pause" :> Post '[JSON] State
+  = "action" :> "start_pause" :> Post '[JSON] ServerState
 
 type SetTagsAPI
-  = "action" :> "set_tags" :> ReqBody '[JSON] [Text] :> Post '[JSON] State
+  = "action" :> "set_tags" :> ReqBody '[JSON] [Text] :> Post '[JSON] ServerState
 
 type TickAPI
-  = "tick" :> Get '[JSON] State
+  = "tick" :> Get '[JSON] ServerState

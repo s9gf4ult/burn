@@ -2,6 +2,7 @@ module Burn.Server.Transform where
 
 import Burn.Types
 import Control.Lens
+import Control.Monad.State.Strict
 import Data.Aeson
 import Data.Aeson.TH
 import Data.Default
@@ -16,13 +17,13 @@ import qualified Data.Text as T
 
 
 -- | Handles message and transforms state
-process :: Settings -> Message -> State -> (State, [Action])
+process :: Settings -> Message -> ServerState -> (ServerState, [Action])
 process s msg state =
   let
     (newB, actions) = processBurn s msg (state ^. sTags) (state ^. sBurn)
     newTags = processTags msg $ state ^. sTags
     newCounted = processCounted actions $ state ^. sTodayPomodors
-  in (State newTags newCounted newB, actions)
+  in (ServerState newTags newCounted newB, actions)
 
 processTags
   :: Message
@@ -33,7 +34,10 @@ processTags msg tags = case msg ^. mEvent of
   _               -> tags
 
 processCounted :: [Action] -> [PomodoroData UTCTime] -> [PomodoroData UTCTime]
-processCounted actions = (<> (actions ^.. folded . _SavePomodoro))
+processCounted actions = execState $ do
+  for_ actions $ \action -> case action of
+    SavePomodoro pd -> modify (pd:)
+    ResetTimers     -> put []
 
 processBurn
   :: Settings

@@ -18,7 +18,7 @@ import System.Directory
 import qualified Data.ByteString.Lazy as BL
 
 data Payload = Payload
-  { _pState    :: TVar State
+  { _pState    :: TVar ServerState
   , _pSettings :: TVar Settings
   }
 
@@ -42,7 +42,7 @@ handlers p
 handleMessage
   :: Event
   -> Payload
-  -> ExceptT ServantErr IO State
+  -> ExceptT ServantErr IO ServerState
 handleMessage evt p = liftBase $ do
   now <- getCurrentTime
   let msg = Message now evt

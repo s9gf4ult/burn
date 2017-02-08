@@ -59,7 +59,7 @@ formatTimeDiff (truncate -> seconds) =
       | otherwise -> ms
   in res
 
-updateView :: View -> Pixbufs -> UTCTime -> State -> IO ()
+updateView :: View -> Pixbufs -> UTCTime -> ServerState -> IO ()
 updateView v pbs now s = do
   print s
   let

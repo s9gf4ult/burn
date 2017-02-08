@@ -96,20 +96,20 @@ deriveJSON
 instance Default Burn where
   def = Waiting
 
-data State = State
+data ServerState = ServerState
   { _sTags          :: ![Text]
   , _sTodayPomodors :: ![PomodoroData UTCTime]
     -- ^ List of today's counted pomodoros
   , _sBurn          :: !Burn
   } deriving (Show)
 
-makeLenses ''State
+makeLenses ''ServerState
 deriveJSON
   defaultOptions
-  ''State
+  ''ServerState
 
-instance Default State where
-  def = State [] def def
+instance Default ServerState where
+  def = ServerState [] def def
 
 data Event
   = Tick
@@ -140,7 +140,7 @@ data Settings = Settings
   { _sPomodoroLen :: !NominalDiffTime
   , _sPauseLen    :: !NominalDiffTime
   , _sLongPause   :: !NominalDiffTime
-  , _sDayEnd      :: !DiffTime
+  , _sDayEnd      :: !TimeOfDay
   , _sDataFile    :: !FilePath
   } deriving (Eq, Ord, Show)
 
@@ -151,6 +151,6 @@ instance Default Settings where
     { _sPomodoroLen = 25 * 60
     , _sPauseLen    = 5 * 60
     , _sLongPause   = 15 * 60
-    , _sDayEnd      = secondsToDiffTime $ 5 * 3600 -- 5 am is a day end
+    , _sDayEnd      = TimeOfDay 5 0 0
     , _sDataFile    = "/home/razor/burn/pomodoros.csv" -- FIXME: make configurable
     }

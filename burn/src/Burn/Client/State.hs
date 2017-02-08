@@ -19,7 +19,7 @@ instance Default ClientState where
 updateState
   :: UTCTime
      -- ^ Now
-  -> State
+  -> ServerState
      -- ^ State came from server
   -> ClientState
   -> (ClientState, [Notification])

@@ -15,7 +15,7 @@ import Test.Tasty.HUnit
 
 data S = S
   { _sNow      :: !UTCTime
-  , _sState    :: !State
+  , _sState    :: !ServerState
   , _sClient   :: !ClientState
   , _sSettings :: !Settings
   }
