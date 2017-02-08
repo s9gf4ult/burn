@@ -101,6 +101,7 @@ data ServerState = ServerState
   , _sTodayPomodors :: ![PomodoroData UTCTime]
     -- ^ List of today's counted pomodoros
   , _sBurn          :: !Burn
+  , _sLastMsg       :: !UTCTime
   } deriving (Show)
 
 makeLenses ''ServerState
@@ -108,8 +109,11 @@ deriveJSON
   defaultOptions
   ''ServerState
 
-instance Default ServerState where
-  def = ServerState [] def def
+mkServerState
+  :: UTCTime
+     -- ^ now
+  -> ServerState
+mkServerState = ServerState [] [] def
 
 data Event
   = Tick

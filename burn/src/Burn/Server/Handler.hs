@@ -24,12 +24,13 @@ data Payload = Payload
 
 makeLenses ''Payload
 
-initPayload :: IO Payload
-initPayload = Payload <$> newTVarIO def <*> newTVarIO def
+initPayload :: UTCTime -> IO Payload
+initPayload now = Payload <$> newTVarIO (mkServerState now) <*> newTVarIO def
 
 burn :: IO ()
 burn = do
-  p <- initPayload
+  now <- getCurrentTime
+  p <- initPayload now
   run 1338 $ serve burnAPI $ handlers p
 
 handlers :: Payload -> Server BurnAPI
@@ -45,11 +46,12 @@ handleMessage
   -> ExceptT ServantErr IO ServerState
 handleMessage evt p = liftBase $ do
   now <- getCurrentTime
+  tz <- getCurrentTimeZone
   let msg = Message now evt
   (settings, (newSt, actions)) <- atomically $ do
     state <- readTVar $ p ^. pState
     settings <- readTVar $ p ^. pSettings
-    let res@(newSt, _) = process settings msg state
+    let res@(newSt, _) = process settings tz msg state
     writeTVar (p ^. pState) newSt
     return (settings, res)
   print evt

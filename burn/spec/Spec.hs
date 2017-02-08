@@ -15,13 +15,16 @@ import Test.Tasty.HUnit
 
 data S = S
   { _sNow      :: !UTCTime
+  , _sTimeZone :: !TimeZone
   , _sState    :: !ServerState
   , _sClient   :: !ClientState
   , _sSettings :: !Settings
   }
 
 instance Default S where
-  def = S (UTCTime (fromGregorian 2020 10 10) 0) def def def
+  def = S now utc (mkServerState now) def def
+    where
+      now = UTCTime (fromGregorian 2020 10 10) 0
 
 makeLenses ''S
 
@@ -55,7 +58,8 @@ send evt = do
   now <- use sNow
   let msg = Message now evt
   s         <- use sSettings
-  actions   <- zoom sState $ state $ (snd &&& fst) . process s msg
+  tz        <- use sTimeZone
+  actions   <- zoom sState $ state $ (snd &&& fst) . process s tz msg
   newServer <- use sState
   notifs    <- zoom sClient $ state $ (snd &&& fst) . updateState now newServer
   return $ (map Left notifs) ++ (map Right actions)
@@ -97,6 +101,16 @@ expectNotification n a = do
 emptyActions :: [AcNot] -> SIO ()
 emptyActions =
   liftBase . assertEqual "No actions: " []
+
+resetTimers :: [AcNot] -> SIO ()
+resetTimers acnot = do
+  let ac = acnot ^.. folded . _Right
+  liftBase $ ac @?= [ResetTimers]
+
+todayPomodoros :: NominalDiffTime -> SIO ()
+todayPomodoros psum = do
+  p <- use $ sState . sTodayPomodors
+  liftBase $ assertEqual "Today pomodoros" psum $ sumOf (folded . pdLen) p
 
 shortPomodoro :: Assertion
 shortPomodoro = runSIO $ do
@@ -180,10 +194,28 @@ setTags = runSIO $ do
   pomodoroFinished =<< spend (mm 5)
   pomodoroSaved (mm 5) =<< send StartPause
 
+splitDay :: Assertion
+splitDay = runSIO $ do
+  sNow .= UTCTime (fromGregorian 2020 10 10)
+    (secondsToDiffTime ((24 * 3600) - (60 * 25))) -- 25 min till day end
+  sSettings . sDayEnd .= TimeOfDay 0 0 0 -- day end match with day end
+  send' StartPomodoro
+  isolate $ do
+    emptyActions =<< spend (mm 24) -- minute till day end
+    pomodoroSaved (mm 24) =<< send StartPause
+    todayPomodoros (mm 24)
+    resetTimers =<< spend (mm 2) -- minute in tomorrow
+    todayPomodoros 0
+  isolate $ do
+    resetTimers =<< spend (mm 30) -- 5 minutes in tomorrow
+    pomodoroSaved (mm 30) =<< send StartPause
+    todayPomodoros (mm 5)
+
 main :: IO ()
 main = defaultMain $ testGroup "Test cases"
   [ testCase "shortPomodoro" shortPomodoro
   , testCase "longPomodoro" longPomodoro
   , testCase "shortPause" shortPause
   , testCase "setTags" setTags
+  , testCase "splitDay" splitDay
   ]

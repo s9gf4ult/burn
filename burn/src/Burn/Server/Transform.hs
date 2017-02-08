@@ -7,6 +7,7 @@ import Data.Aeson
 import Data.Aeson.TH
 import Data.Default
 import Data.Foldable
+import Data.List as L
 import Data.Map.Strict (Map)
 import Data.Monoid
 import Data.Text (Text)
@@ -17,13 +18,69 @@ import qualified Data.Text as T
 
 
 -- | Handles message and transforms state
-process :: Settings -> Message -> ServerState -> (ServerState, [Action])
-process s msg state =
+process :: Settings -> TimeZone -> Message -> ServerState -> (ServerState, [Action])
+process s tz msg state =
   let
-    (newB, actions) = processBurn s msg (state ^. sTags) (state ^. sBurn)
-    newTags = processTags msg $ state ^. sTags
-    newCounted = processCounted actions $ state ^. sTodayPomodors
-  in (ServerState newTags newCounted newB, actions)
+    Message now _ = msg
+    (burn, actions') = processBurn s msg (state ^. sTags) (state ^. sBurn)
+    tags = processTags msg $ state ^. sTags
+    actions  = splitDaylyActions s tz (state ^. sLastMsg) now actions'
+    pomodors = processCounted actions $ state ^. sTodayPomodors
+    newState = ServerState
+      { _sTags          = tags
+      , _sTodayPomodors = pomodors
+      , _sBurn          = burn
+      , _sLastMsg       = now }
+  in (newState, actions)
+
+splitDaylyActions
+  :: Settings
+  -> TimeZone
+  -> UTCTime
+  -- ^ time of previous msg
+  -> UTCTime
+  -- ^ now
+  -> [Action]
+  -> [Action]
+splitDaylyActions s tz prev now actions =
+  case timeBetween tz prev now (s ^. sDayEnd) of
+    Nothing -> actions
+    Just de ->
+      let pomodors = (actions ^.. folded . _SavePomodoro) >>= splitPomodoro de
+          f p = p ^. pdStarted >= de
+          (a, b) = break f pomodors
+      in map SavePomodoro a ++ [ResetTimers] ++ map SavePomodoro b
+
+splitPomodoro :: UTCTime -> PomodoroData UTCTime -> [PomodoroData UTCTime]
+splitPomodoro de pd =
+  let
+    pstart = pd ^. pdStarted
+    pend = addUTCTime (pd ^. pdLen) pstart
+    result = if
+      | pstart < de && de < pend ->
+        let l1 = diffUTCTime de pstart
+            l2 = diffUTCTime pend de
+            tags = pd ^. pdTags
+        in [PomodoroData pstart l1 tags, PomodoroData de l2 tags]
+      | otherwise -> [pd]
+  in result
+
+timeBetween
+  :: TimeZone
+  -> UTCTime
+  -- ^ time of previous msg
+  -> UTCTime
+  -- ^ now
+  -> TimeOfDay
+  -- ^ day end
+  -> Maybe UTCTime
+  -- ^ end of day between given msg times
+timeBetween tz prev now dayEnd =
+  let
+    days = nub $ map (localDay . utcToLocalTime tz) [prev, now]
+    tods = flip map days $ \day -> localTimeToUTC tz $ LocalTime day dayEnd
+    todsBetween = filter (\tod -> prev < tod && tod <= now) tods
+  in maximumOf folded todsBetween
 
 processTags
   :: Message
