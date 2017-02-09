@@ -25,6 +25,7 @@ library
                  , Burn.Server
                  , Burn.Server.Handler
                  , Burn.Server.Transform
+                 , Burn.Storage
                  , Burn.Types
   build-depends: aeson
                , base >= 4.6 && <= 5
@@ -42,6 +43,7 @@ library
                , text
                , time
                , transformers-base
+               , vector
                , warp
   default-extensions: DataKinds
                     , DeriveFoldable

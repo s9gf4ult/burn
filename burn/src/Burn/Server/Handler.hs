@@ -2,20 +2,16 @@ module Burn.Server.Handler where
 
 import Burn.API
 import Burn.Server.Transform
-import Burn.Types
+import Burn.Storage
 import Control.Concurrent.STM
 import Control.Lens
 import Control.Monad.Base
 import Control.Monad.Except
-import Data.Csv
 import Data.Default
-import Data.Maybe
 import Data.Time
 import Network.Wai.Handler.Warp (run)
 import Servant
-import System.Directory
 
-import qualified Data.ByteString.Lazy as BL
 
 data Payload = Payload
   { _pState    :: TVar ServerState
@@ -59,13 +55,6 @@ handleMessage evt p = liftBase $ do
     $ actions ^.. folded . _SavePomodoro
   savePomodoros (settings ^. sDataFile) pomodors
   return newSt
-
-savePomodoros :: FilePath -> [PomodoroData ZonedTime] -> IO ()
-savePomodoros fp' pomodors = do
-  fp <- canonicalizePath fp'
-  BL.appendFile fp $ encode pomodors
-
-
 
 startPomodoro :: Payload -> Server StartPomodoroAPI
 startPomodoro = handleMessage StartPomodoro
