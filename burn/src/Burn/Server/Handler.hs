@@ -9,6 +9,7 @@ import Control.Monad.Base
 import Control.Monad.Except
 import Data.Default
 import Data.Time
+import Data.Vector as V
 import Network.Wai.Handler.Warp (run)
 import Servant
 
@@ -20,13 +21,26 @@ data Payload = Payload
 
 makeLenses ''Payload
 
-initPayload :: UTCTime -> IO Payload
-initPayload now = Payload <$> newTVarIO (mkServerState now) <*> newTVarIO def
+initPayload :: IO Payload
+initPayload = do
+  zt <- getZonedTime
+  let
+    now = zonedTimeToUTC zt
+    settings = def
+    eod = settings ^. sDayEnd
+    day = timeDay eod zt
+  pomodors <- loadPomodors $ settings ^. sDataFile
+  let
+    pMap = splitPomodoros eod $ V.toList pomodors
+    todayZoned = pMap ^.. ix day . folded
+    todayUtc = over (traversed . pdStarted) zonedTimeToUTC todayZoned
+    state = mkServerState now & sTodayPomodors .~ todayUtc
+  print todayZoned
+  Payload <$> newTVarIO state <*> newTVarIO settings
 
 burn :: IO ()
 burn = do
-  now <- getCurrentTime
-  p <- initPayload now
+  p <- initPayload
   run 1338 $ serve burnAPI $ handlers p
 
 handlers :: Payload -> Server BurnAPI
