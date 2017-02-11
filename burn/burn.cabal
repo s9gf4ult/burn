@@ -19,6 +19,7 @@ library
   hs-source-dirs: src
   ghc-options: -Wall
   exposed-modules: Burn.API
+                 , Burn.Cli
                  , Burn.Client
                  , Burn.Client.Query
                  , Burn.Client.State
@@ -38,6 +39,7 @@ library
                , foldl
                , lens
                , mtl
+               , optparse-applicative
                , profunctors
                , servant      >= 0.9.1.1
                , servant-client
