@@ -22,6 +22,8 @@ deriveJSON
 newtype Tags = Tags [Text]
   deriving (Eq, Ord, Show, Generic, FromJSON, ToJSON)
 
+makePrisms ''Tags
+
 instance FromField Tags where
   parseField f = do
     t <- parseField f

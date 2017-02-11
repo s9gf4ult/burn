@@ -25,6 +25,7 @@ library
                  , Burn.Server
                  , Burn.Server.Handler
                  , Burn.Server.Transform
+                 , Burn.Statistics
                  , Burn.Storage
                  , Burn.Types
   build-depends: aeson
@@ -34,11 +35,14 @@ library
                , containers
                , data-default
                , directory
+               , foldl
                , lens
                , mtl
+               , profunctors
                , servant      >= 0.9.1.1
                , servant-client
                , servant-server  >= 0.9.1.1
+               , statistics
                , stm
                , text
                , time
@@ -50,6 +54,7 @@ library
                     , DeriveFunctor
                     , DeriveGeneric
                     , DeriveTraversable
+                    , FlexibleContexts
                     , GeneralizedNewtypeDeriving
                     , LambdaCase
                     , MultiWayIf
