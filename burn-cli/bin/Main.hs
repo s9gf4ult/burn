@@ -1,7 +1,7 @@
 module Main where
 
 import Burn.Cli
-import Burn.CliRun
+import Burn.Optparse
 import Options.Applicative
 
 main :: IO ()

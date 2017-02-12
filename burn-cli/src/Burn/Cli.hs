@@ -1,11 +1,10 @@
-module Burn.CliRun where
+module Burn.Cli where
 
 import Burn.API
-import Burn.Cli
 import Burn.Client
+import Burn.Optparse
 import Burn.Server (Payload(..), handlers)
 import Burn.Storage
-import Burn.Types
 import Control.Concurrent.STM
 import Control.Exception
 import Control.Lens

@@ -1,4 +1,4 @@
-module Burn.Cli where
+module Burn.Optparse where
 
 import Burn.Types
 import Control.Lens

@@ -19,10 +19,10 @@ library
   hs-source-dirs: src
   ghc-options: -Wall
   exposed-modules: Burn.API
-                 , Burn.Cli
                  , Burn.Client
                  , Burn.Client.Query
                  , Burn.Client.State
+                 , Burn.Optparse
                  , Burn.Server
                  , Burn.Server.Handler
                  , Burn.Server.Transform
@@ -62,14 +62,6 @@ library
                     , MultiWayIf
                     , TemplateHaskell
                     , TypeOperators
-
-executable burn
-  hs-source-dirs:      bin
-  ghc-options: -Wall -threaded
-  main-is:             Main.hs
-  default-language:    Haskell2010
-  build-depends:       base >= 4.6 && < 5
-                     , burn
 
 test-suite spec
   type:             exitcode-stdio-1.0
