@@ -21,6 +21,7 @@ library
   exposed-modules: Burn.Cli
   build-depends: base >= 4.6 && <= 5
                , burn
+               , data-default
                , http-client
                , lens
                , servant >= 0.9.1.1

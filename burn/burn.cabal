@@ -32,6 +32,7 @@ library
                  , Burn.Server.Transform
                  , Burn.Statistics
                  , Burn.Statistics.Functions
+                 , Burn.Statistics.Query
                  , Burn.Statistics.Types
                  , Burn.Storage
                  , Burn.Types

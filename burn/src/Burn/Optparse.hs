@@ -1,11 +1,8 @@
 module Burn.Optparse
-  ( module Burn.Optparse.Args
-  , module Burn.Optparse.Client
-  , module Burn.Optparse.Server
-  , module Burn.Optparse.Statistics
+  ( module X
   ) where
 
-import Burn.Optparse.Args
-import Burn.Optparse.Client
-import Burn.Optparse.Server
-import Burn.Optparse.Statistics
+import Burn.Optparse.Args as X
+import Burn.Optparse.Client as X
+import Burn.Optparse.Server as X
+import Burn.Optparse.Statistics as X

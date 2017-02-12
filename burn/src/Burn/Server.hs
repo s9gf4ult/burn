@@ -1,7 +1,6 @@
 module Burn.Server
-  ( module Burn.Server.Handler
-  , module Burn.Server.Transform
+  ( module X
   ) where
 
-import Burn.Server.Handler
-import Burn.Server.Transform
+import Burn.Server.Handler as X
+import Burn.Server.Transform as X

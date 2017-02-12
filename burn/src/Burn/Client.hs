@@ -1,7 +1,6 @@
 module Burn.Client
-  ( module Burn.Client.Query
-  , module Burn.Client.State
+  ( module X
   ) where
 
-import Burn.Client.Query
-import Burn.Client.State
+import Burn.Client.Query as X
+import Burn.Client.State as X

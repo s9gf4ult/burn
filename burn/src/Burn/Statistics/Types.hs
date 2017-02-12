@@ -23,7 +23,6 @@ instance Ord TimeRange where
     EQ -> compare b b'
     x  -> x
 
-
 -- | Precondition: income list is sorted by start time
 invertTimeRanges :: [TimeRange] -> [TimeRange]
 invertTimeRanges (a:b:rest) =
@@ -36,7 +35,6 @@ invertTimeRanges (a:b:rest) =
     | otherwise -> invertTimeRanges (b:rest)
 invertTimeRanges _ = []
 
-
 data LenStatistics = LenStatistics
   { _sSum        :: !NominalDiffTime
   , _sMinLen     :: !(Maybe NominalDiffTime)
@@ -46,3 +44,16 @@ data LenStatistics = LenStatistics
   } deriving (Eq, Ord, Show)
 
 makeLenses ''LenStatistics
+
+data StatData
+  = SDSummary LenStatistics
+  deriving (Eq, Ord, Show)
+
+makePrisms ''StatData
+
+data StatsResult = StatsResult
+  { _srTime :: Day  -- FIXME: more variance
+  , _srStatData :: StatData
+  } deriving (Eq, Ord, Show)
+
+makeLenses ''StatsResult

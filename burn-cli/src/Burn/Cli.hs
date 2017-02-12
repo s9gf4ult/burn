@@ -4,11 +4,13 @@ import Burn.API
 import Burn.Client
 import Burn.Optparse
 import Burn.Server (Payload(..), handlers)
+import Burn.Statistics
 import Burn.Storage
 import Control.Concurrent.STM
 import Control.Exception
 import Control.Lens
 import Control.Monad
+import Data.Default
 import Data.Foldable
 import Data.String
 import Data.Time
@@ -57,10 +59,16 @@ runBurnClient ca = case ca ^. caCommands of
     for_ commands $ \c -> do
       executeCommand env c
 
+printStatResult :: StatsResult -> IO ()
+printStatResult sr = do
+  print $ sr ^. srTime
+  print $ sr ^. srStatData
+
 runBurnStats :: StatQuery -> IO ()
 runBurnStats q = do
-  s <- calculateStatistics q
-  cliPrintStatistics s
+  p <- loadPomodors $ def ^. sDataFile -- FIXME: from options
+  let res = execStatsQuery q p
+  traverse_ printStatResult res
 
 burnCli :: Args -> IO ()
 burnCli = \case
