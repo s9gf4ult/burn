@@ -23,6 +23,10 @@ library
                  , Burn.Client.Query
                  , Burn.Client.State
                  , Burn.Optparse
+                 , Burn.Optparse.Args
+                 , Burn.Optparse.Client
+                 , Burn.Optparse.Server
+                 , Burn.Optparse.Statistics
                  , Burn.Server
                  , Burn.Server.Handler
                  , Burn.Server.Transform
