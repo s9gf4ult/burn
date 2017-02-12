@@ -14,7 +14,7 @@ import Options.Applicative
 data Args
   = Server ServerArgs
   | Client ClientArgs
-  -- | Statistic StatisticArgs
+  | Statistic StatQuery
 
 makePrisms ''Args
 
@@ -22,10 +22,13 @@ argsParser :: Parser Args
 argsParser = helper <*> go
   where
     go = (Server <$> subparser server) <|> (Client <$> subparser client)
+      <|> (Statistic <$> subparser stat)
     server = command "server" $ info (helper <*> serverArgs)
       $ progDesc "server options" <> fullDesc
     client = command "client" $ info (helper <*> clientArgs)
       $ progDesc "client options" <> fullDesc
+    stat = command "stat" $ info (helper <*> statQuery)
+      $ progDesc "statistics options" <> fullDesc
 
 argsParserInfo :: ParserInfo Args
 argsParserInfo = info argsParser

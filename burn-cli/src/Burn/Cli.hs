@@ -57,7 +57,13 @@ runBurnClient ca = case ca ^. caCommands of
     for_ commands $ \c -> do
       executeCommand env c
 
+runBurnStats :: StatQuery -> IO ()
+runBurnStats q = do
+  s <- calculateStatistics q
+  cliPrintStatistics s
+
 burnCli :: Args -> IO ()
 burnCli = \case
   Server h -> runBurnServer h
   Client c -> runBurnClient c
+  Statistics s -> runBurnStats s

@@ -31,6 +31,8 @@ library
                  , Burn.Server.Handler
                  , Burn.Server.Transform
                  , Burn.Statistics
+                 , Burn.Statistics.Functions
+                 , Burn.Statistics.Types
                  , Burn.Storage
                  , Burn.Types
   build-depends: aeson
