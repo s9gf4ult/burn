@@ -1,12 +1,10 @@
 module Main where
 
-import System.Environment
 import Burn.Cli
+import Burn.CliRun
+import Options.Applicative
 
 main :: IO ()
 main = do
-  args <- getArgs
-  let cmds = traverse evtStr args
-  case cmds of
-    Left e -> print e
-    Right c -> execute $ Send c
+  args <- execParser argsParserInfo
+  burnCli args

@@ -13,7 +13,6 @@ import Data.Vector as V
 import Network.Wai.Handler.Warp (run)
 import Servant
 
-
 data Payload = Payload
   { _pState    :: TVar ServerState
   , _pSettings :: TVar Settings
@@ -26,7 +25,7 @@ initPayload = do
   zt <- getZonedTime
   let
     now = zonedTimeToUTC zt
-    settings = def
+    settings = def              -- FIXME: take from args
     eod = settings ^. sDayEnd
     day = timeDay eod zt
   pomodors <- loadPomodors $ settings ^. sDataFile
