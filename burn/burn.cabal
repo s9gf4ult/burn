@@ -37,6 +37,7 @@ library
                , data-default
                , directory
                , foldl
+               , http-client
                , lens
                , mtl
                , optparse-applicative

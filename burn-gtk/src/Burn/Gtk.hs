@@ -3,4 +3,5 @@ module Burn.Gtk
   ) where
 
 import Burn.Gtk.Controller as X
+import Burn.Gtk.Run as X
 import Burn.Gtk.View as X

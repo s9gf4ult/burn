@@ -18,13 +18,8 @@ import Network.Wai.Handler.Warp hiding (Settings)
 import Servant.Client
 import Servant.Server
 
-executeCommand :: Manager -> HostPort -> Command -> IO ()
-executeCommand m hp command = do
-  let
-    host    = hp ^. hpHost
-    port    = hp ^. hpPort
-    baseUri = BaseUrl Http host port ""
-    env     = ClientEnv m baseUri
+executeCommand :: ClientEnv -> Command -> IO ()
+executeCommand env command = do
   void $ either throwIO return =<< case command of
     Pomodoro -> runClientM startPomodoro env
     Pause -> runClientM startPause env
@@ -58,9 +53,9 @@ runBurnClient :: ClientArgs -> IO ()
 runBurnClient ca = case ca ^. caCommands of
   [] -> fail "List of commands must be non empty"
   commands -> do
-    m <- newManager defaultManagerSettings
+    env <- hostPortClientEnv $ ca ^. caHostPort
     for_ commands $ \c -> do
-      executeCommand m (ca ^. caHostPort) c
+      executeCommand env c
 
 burnCli :: Args -> IO ()
 burnCli = \case

@@ -3,6 +3,7 @@ module Burn.Gtk.Controller where
 import Burn.API
 import Burn.Client
 import Burn.Gtk.View
+import Burn.Optparse
 import Control.Concurrent
 import Control.Concurrent.STM
 import Control.Lens
@@ -91,13 +92,11 @@ updateView v pbs now s = do
     statusIconSetFromPixbuf (v ^. vStatusIcon) pbuf
     statusIconSetTooltipText (v ^. vStatusIcon) $ Just counterText
 
-newController :: View -> Pixbufs -> IO Controller
-newController v pbs = do
-  m <- newManager defaultManagerSettings
+newController :: HostPort -> View -> Pixbufs -> IO Controller
+newController hp v pbs = do
+  env <- hostPortClientEnv hp
   clientState <- newTVarIO def
   let
-    baseUri = BaseUrl Http "127.0.0.1" 1338 "" -- FIXME: get from params
-    env = ClientEnv m baseUri
     method clientCall = void $ forkIO $ do
       resp <- runClientM clientCall env
       case resp of

@@ -23,8 +23,8 @@ hostPort = HostPort
   <$> strOption host
   <*> option auto port
   where
-    host = long "host" <> short 'h'
-      <> help "Address to listen at" <> value (def ^. hpHost)
+    host = long "address" <> short 'a'
+      <> help "Address to listen/connect" <> value (def ^. hpHost)
     port = long "port" <> short 'p'
       <> help "Port" <> value (def ^. hpPort)
 
