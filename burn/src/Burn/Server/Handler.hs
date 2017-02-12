@@ -2,6 +2,7 @@ module Burn.Server.Handler where
 
 import Burn.API
 import Burn.Server.Transform
+import Burn.Statistics
 import Burn.Storage
 import Control.Concurrent.STM
 import Control.Lens

@@ -13,8 +13,11 @@ import Control.Monad
 import Data.Default
 import Data.Foldable
 import Data.String
+import Data.Text.IO as T
 import Data.Time
 import Data.Vector as V
+import Formatting
+import Formatting.Time
 import Network.HTTP.Client
 import Network.Wai.Handler.Warp hiding (Settings)
 import Servant.Client
@@ -60,15 +63,19 @@ runBurnClient ca = case ca ^. caCommands of
       executeCommand env c
 
 printStatResult :: StatsResult -> IO ()
-printStatResult sr = do
-  print $ sr ^. srTime
-  print $ sr ^. srStatData
+printStatResult sr = T.putStrLn t
+  where
+    t = sformat (dateDash % ": sum " % hms)
+      (sr ^. srTime)
+      (sr ^. srStatData . _SDSummary . sSum . to (timeToTimeOfDay . realToFrac))
+
 
 runBurnStats :: StatQuery -> IO ()
 runBurnStats q = do
   p <- loadPomodors $ def ^. sDataFile -- FIXME: from options
-  let res = execStatsQuery q p
-  traverse_ printStatResult res
+  let mres = execStatsQuery (def ^. sDayEnd) q p
+  for_ mres $ \res -> do
+    traverse_ printStatResult res
 
 burnCli :: Args -> IO ()
 burnCli = \case

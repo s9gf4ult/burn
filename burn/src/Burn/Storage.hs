@@ -21,35 +21,3 @@ savePomodoros :: FilePath -> [PomodoroData ZonedTime] -> IO ()
 savePomodoros fp' pomodors = do
   fp <- canonicalizePath fp'
   BL.appendFile fp $ encode pomodors
-
-splitPomodoros
-  :: TimeOfDay
-     -- ^ Day end
-  -> [PomodoroData ZonedTime]
-  -> Map Day [PomodoroData ZonedTime]
-splitPomodoros eod
-  = M.fromListWith (++)
-  . L.map (views pdStarted (timeDay eod) &&& (:[]))
-
-posixDayLength :: DiffTime
-posixDayLength = fromInteger 86400
-
--- | Calculates corrected day according to given day end
-timeDay
-  :: TimeOfDay
-  -- ^ Day end
-  -> ZonedTime
-  -> Day
-timeDay eod' zt =
-  let
-    u = zonedTimeToUTC zt
-    shift = if timeOfDayToTime midnight <= eod && eod < timeOfDayToTime midday
-      then owlShift
-      else larkShift
-    shifted = addUTCTime shift u
-    shiftedZ = utcToZonedTime (zonedTimeZone zt) shifted
-  in localDay $ zonedTimeToLocalTime shiftedZ
-  where
-    owlShift = negate $ realToFrac eod
-    larkShift = realToFrac $ posixDayLength - eod
-    eod = timeOfDayToTime eod'

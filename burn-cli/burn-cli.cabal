@@ -22,6 +22,7 @@ library
   build-depends: base >= 4.6 && <= 5
                , burn
                , data-default
+               , formatting
                , http-client
                , lens
                , servant >= 0.9.1.1
@@ -35,6 +36,7 @@ library
   default-extensions: DataKinds
                     , LambdaCase
                     , MultiWayIf
+                    , OverloadedStrings
                     , TemplateHaskell
                     , TypeOperators
                         

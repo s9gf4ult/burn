@@ -70,7 +70,7 @@ data Stats
 makePrisms ''Stats
 
 data StatQuery = StatQuery
-  { _sqFilter :: FromTo
+  { _sqFromTo :: FromTo
   , _sqStats  :: Stats
   } deriving (Eq, Ord, Show)
 
@@ -82,5 +82,5 @@ statQuery = option parseStatistics
   where
     -- FIXME: implement the parser
     parseStatistics = return $ StatQuery
-      { _sqFilter = FromTo Beginning Now
-      , _sqStats = StatsSummary $ Summary GroupByDay }
+      { _sqFromTo = FromTo Beginning Now
+      , _sqStats  = StatsSummary $ Summary GroupByDay }
