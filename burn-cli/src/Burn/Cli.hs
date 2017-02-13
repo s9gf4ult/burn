@@ -12,7 +12,9 @@ import Control.Lens
 import Control.Monad
 import Data.Default
 import Data.Foldable
+import Data.Monoid
 import Data.String
+import Data.Text as T
 import Data.Text.IO as T
 import Data.Time
 import Data.Vector as V
@@ -65,9 +67,16 @@ runBurnClient ca = case ca ^. caCommands of
 printStatResult :: StatsResult -> IO ()
 printStatResult sr = T.putStrLn t
   where
-    t = sformat (dateDash % ": sum " % hms)
-      (sr ^. srTime)
-      (sr ^. srStatData . _SDSummary . sSum . to (timeToTimeOfDay . realToFrac))
+    t = day <> ": " <> results
+    day = T.pack $ show $ sr ^. srTime
+    ls = sr ^. srStatData . _SDSummary
+    results
+      = (m " sum: " $ ls ^. sSum . re _Just)
+      <> (m " min: " $ ls ^. sMinLen)
+      <> (m " max: " $ ls ^. sMaxLen)
+      <> (m " median: " $ ls ^. sMedian)
+      <> (sformat (" count: " % shown) $ ls ^. sCount)
+    m t v = maybe "" (sformat (t % hms) . timeToTimeOfDay . realToFrac) v
 
 
 runBurnStats :: StatQuery -> IO ()
