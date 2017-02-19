@@ -36,13 +36,16 @@ library
                  , Burn.Statistics.Types
                  , Burn.Storage
                  , Burn.Types
+                 , Peridot.Types
   build-depends: aeson
                , base >= 4.6 && <= 5
                , bytestring
                , cassava
                , containers
                , data-default
+               , dependent-map
                , directory
+               , dlist
                , foldl
                , http-client
                , lens
@@ -65,10 +68,14 @@ library
                     , DeriveGeneric
                     , DeriveTraversable
                     , FlexibleContexts
+                    , GADTs
                     , GeneralizedNewtypeDeriving
+                    , KindSignatures
                     , LambdaCase
                     , MultiWayIf
+                    , PolyKinds
                     , TemplateHaskell
+                    , TypeFamilies
                     , TypeOperators
 
 test-suite spec
