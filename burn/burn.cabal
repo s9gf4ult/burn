@@ -68,12 +68,16 @@ library
                     , DeriveGeneric
                     , DeriveTraversable
                     , FlexibleContexts
+                    , FlexibleInstances
+                    , FunctionalDependencies
                     , GADTs
                     , GeneralizedNewtypeDeriving
                     , KindSignatures
                     , LambdaCase
+                    , MultiParamTypeClasses
                     , MultiWayIf
                     , PolyKinds
+                    , ScopedTypeVariables
                     , TemplateHaskell
                     , TypeFamilies
                     , TypeOperators

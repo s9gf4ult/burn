@@ -42,8 +42,25 @@ colGroup f = \case
   List dl   -> Grouped $ f dl
   Grouped m -> Grouped $ fmap (colGroup f) m
 
--- colUngroup :: Collection s k f -> Collection (UngroupShape s) k f
--- colUngroup = \case
---   Grouped m -> List $ DL.fromList $ fmap merge $ M.toList m
---     where
---       merge (k, v) =
+class ColUngroup (s :: [S a]) k f where
+  type UngroupKey s :: a
+  type UngroupShape s :: [S a]
+  colUngroup
+    :: k (UngroupKey s)
+    -> Collection s k f
+    -> Collection (UngroupShape s) k f
+
+instance (GCompare k) => ColUngroup '[ 'G a ] k f where
+  type UngroupKey '[ 'G a ] = a
+  type UngroupShape '[ 'G a ] = '[ 'L ]
+  colUngroup key = \case
+    Grouped m -> List $ DL.fromList $ fmap merge $ M.toList m
+      where
+        merge :: (f a, Collection '[] k f) -> Record k f
+        merge (fa, Rec dm) = DM.insert key fa dm
+
+instance (ColUngroup (b ': s) k f) => ColUngroup ('G a ': b ': s) k f where
+  type UngroupKey ('G a ': b ': s) = UngroupKey (b ': s)
+  type UngroupShape ('G a ': b ': s) = ('G a) ': (UngroupShape (b ': s))
+  colUngroup key = \case
+    Grouped m -> Grouped $ fmap (colUngroup key) m
