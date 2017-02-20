@@ -20,27 +20,41 @@ data Collection (s :: [S key]) (k :: key -> *) (f :: key -> *) where
 
 type RecFolder k f = DList (Record k f) -> Record k f
 
-type family FoldShape (s :: [S a]) :: [S a] where
-  FoldShape '[ 'L ] = '[]
-  FoldShape ('G a ': s) = ('G a) ': (FoldShape s)
+class ColFold (s :: [S a]) k f where
+  type FoldShape (s :: [S key]) :: [S key]
+  colFold
+    :: RecFolder k f
+    -> Collection s k f
+    -> Collection (FoldShape s) k f
 
-colFold :: RecFolder k f -> Collection s k f -> Collection (FoldShape s) k f
-colFold f = \case
-  Rec _     -> error "FIXME: make colFold typesafe"
-  List dl   -> Rec $ f dl
-  Grouped m -> Grouped $ fmap (colFold f) m
+instance ColFold '[ 'L ] k f where
+  type FoldShape '[ 'L ] = '[]
+  colFold f = \case
+    List dl -> Rec $ f dl
 
-type RecGrouper a k f = DList (Record k f) -> Map (f a) (Collection '[ 'L ] k f)
+instance (ColFold rest k f) => ColFold ('G a ': rest) k f where
+  type FoldShape ('G a ': rest) = 'G a ': (FoldShape rest)
+  colFold f = \case
+    Grouped m -> Grouped $ fmap (colFold f) m
 
-type family GroupShape (a :: k) (s :: [S k]) :: [S k] where
-  GroupShape a '[ 'L ] = '[ 'G a, 'L ]
-  GroupShape a ( 'G b ': s) = ('G b) ': (GroupShape a s)
+type RecGrouper a k f = DList (Record k f) -> Map (f a) (DList (Record k f))
 
-colGroup :: RecGrouper a k f -> Collection s k f -> Collection (GroupShape a s) k f
-colGroup f = \case
-  Rec _     -> error "FIXME: make colGroup typesafe"
-  List dl   -> Grouped $ f dl
-  Grouped m -> Grouped $ fmap (colGroup f) m
+class ColGroup (s :: [S key]) k f where
+  type GroupShape (a :: key) (s :: [S key]) :: [S key]
+  colGroup
+    :: RecGrouper a k f
+    -> Collection s k f
+    -> Collection (GroupShape a s) k f
+
+instance ColGroup '[ 'L ] k f where
+  type GroupShape a '[ 'L ] = '[ 'G a, 'L ]
+  colGroup f = \case
+    List dl -> Grouped $ fmap List $ f dl
+
+instance (ColGroup rest k f) => ColGroup ('G a ': rest) k f where
+  type GroupShape key ('G a ': rest) = ('G a) ': (GroupShape key rest)
+  colGroup f = \case
+    Grouped m -> Grouped $ fmap (colGroup f) m
 
 class ColUngroup (s :: [S a]) k f where
   type UngroupKey s :: a
