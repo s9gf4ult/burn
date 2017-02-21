@@ -45,6 +45,8 @@ library
                , containers
                , data-default
                , dependent-map
+               , dependent-sum
+               , dependent-sum-template
                , directory
                , dlist
                , foldl
