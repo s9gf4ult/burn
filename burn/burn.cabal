@@ -36,6 +36,7 @@ library
                  , Burn.Statistics.Types
                  , Burn.Storage
                  , Burn.Types
+                 , Peridot.TimeSeries
                  , Peridot.Types
   build-depends: aeson
                , base >= 4.6 && <= 5
@@ -55,6 +56,7 @@ library
                , servant      >= 0.9.1.1
                , servant-client
                , servant-server  >= 0.9.1.1
+               , singletons
                , statistics
                , stm
                , text
