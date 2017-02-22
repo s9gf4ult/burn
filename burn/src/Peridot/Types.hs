@@ -11,17 +11,17 @@ type Record k f = DMap k f
 
 -- | Shape tag for collection. May be either list or group (which is
 -- map)
-data S k = L | G k
+data S = L | G
 
-data Collection (s :: [S key]) (k :: key -> *) (f :: key -> *) where
+data Collection (s :: [S]) (k :: key -> *) (f :: key -> *) where
   Rec     :: Record k f                   -> Collection '[] k f
   List    :: DList (Record k f)           -> Collection '[ 'L ] k f
-  Grouped :: Map (f a) (Collection s k f) -> Collection ('G a ': s) k f
+  Grouped :: Map (DSum k f) (Collection s k f) -> Collection ('G ': s) k f
 
 type RecFolder k f = DList (Record k f) -> Record k f
 
-class ColFold (s :: [S a]) k f where
-  type FoldShape (s :: [S key]) :: [S key]
+class ColFold (s :: [S]) k f where
+  type FoldShape (s :: [S]) :: [S]
   colFold
     :: RecFolder k f
     -> Collection s k f
@@ -32,49 +32,43 @@ instance ColFold '[ 'L ] k f where
   colFold f = \case
     List dl -> Rec $ f dl
 
-instance (ColFold rest k f) => ColFold ('G a ': rest) k f where
-  type FoldShape ('G a ': rest) = 'G a ': (FoldShape rest)
+instance (ColFold rest k f) => ColFold ('G ': rest) k f where
+  type FoldShape ('G ': rest) = 'G ': (FoldShape rest)
   colFold f = \case
     Grouped m -> Grouped $ fmap (colFold f) m
 
-type RecGrouper a k f = DList (Record k f) -> Map (f a) (DList (Record k f))
+type RecGrouper k f = DList (Record k f) -> Map (DSum k f) (DList (Record k f))
 
-class ColGroup (s :: [S key]) k f where
-  type GroupShape (a :: key) (s :: [S key]) :: [S key]
+class ColGroup (s :: [S]) k f where
+  type GroupShape (s :: [S]) :: [S]
   colGroup
-    :: RecGrouper a k f
+    :: RecGrouper k f
     -> Collection s k f
-    -> Collection (GroupShape a s) k f
+    -> Collection (GroupShape s) k f
 
 instance ColGroup '[ 'L ] k f where
-  type GroupShape a '[ 'L ] = '[ 'G a, 'L ]
+  type GroupShape '[ 'L ] = '[ 'G, 'L ]
   colGroup f = \case
     List dl -> Grouped $ fmap List $ f dl
 
-instance (ColGroup rest k f) => ColGroup ('G a ': rest) k f where
-  type GroupShape key ('G a ': rest) = ('G a) ': (GroupShape key rest)
+instance (ColGroup rest k f) => ColGroup ('G ': rest) k f where
+  type GroupShape ('G ': rest) = 'G ': (GroupShape rest)
   colGroup f = \case
     Grouped m -> Grouped $ fmap (colGroup f) m
 
-class ColUngroup (s :: [S a]) k f where
-  type UngroupKey s :: a
-  type UngroupShape s :: [S a]
-  colUngroup
-    :: k (UngroupKey s)
-    -> Collection s k f
-    -> Collection (UngroupShape s) k f
+class ColUngroup (s :: [S]) k f where
+  type UngroupShape s :: [S]
+  colUngroup :: Collection s k f -> Collection (UngroupShape s) k f
 
-instance (GCompare k) => ColUngroup '[ 'G a ] k f where
-  type UngroupKey '[ 'G a ] = a
-  type UngroupShape '[ 'G a ] = '[ 'L ]
-  colUngroup key = \case
+instance (GCompare k) => ColUngroup '[ 'G ] k f where
+  type UngroupShape '[ 'G ] = '[ 'L ]
+  colUngroup = \case
     Grouped m -> List $ DL.fromList $ fmap merge $ M.toList m
       where
-        merge :: (f a, Collection '[] k f) -> Record k f
-        merge (fa, Rec dm) = DM.insert key fa dm
+        merge :: (DSum k f, Collection '[] k f) -> Record k f
+        merge (ka :=> fa, Rec dm) = DM.insert ka fa dm
 
-instance (ColUngroup (b ': s) k f) => ColUngroup ('G a ': b ': s) k f where
-  type UngroupKey ('G a ': b ': s) = UngroupKey (b ': s)
-  type UngroupShape ('G a ': b ': s) = ('G a) ': (UngroupShape (b ': s))
-  colUngroup key = \case
-    Grouped m -> Grouped $ fmap (colUngroup key) m
+instance (ColUngroup (b ': s) k f) => ColUngroup ('G ': b ': s) k f where
+  type UngroupShape ('G ': b ': s) = 'G ': (UngroupShape (b ': s))
+  colUngroup = \case
+    Grouped m -> Grouped $ fmap colUngroup m
