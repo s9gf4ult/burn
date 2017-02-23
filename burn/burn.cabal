@@ -36,6 +36,7 @@ library
                  , Burn.Statistics.Types
                  , Burn.Storage
                  , Burn.Types
+                 , Peridot.Diffable
                  , Peridot.TimeSeries
                  , Peridot.Types
   build-depends: aeson
@@ -68,6 +69,7 @@ library
                , vinyl
                , warp
   default-extensions: DataKinds
+                    , DefaultSignatures
                     , DeriveFoldable
                     , DeriveFunctor
                     , DeriveGeneric

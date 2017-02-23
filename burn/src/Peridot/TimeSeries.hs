@@ -66,6 +66,7 @@ instance {-# OVERLAPPING #-} Medium UTCTime where
   medium a b
     | a >= b = addUTCTime (diffUTCTime a b / 2) b
 
+
 -- | Default instance for all numbers
 instance {-# OVERLAPPABLE #-} (Num a, Fractional a)
   => Medium a where
