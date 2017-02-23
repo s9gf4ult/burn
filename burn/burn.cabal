@@ -36,9 +36,6 @@ library
                  , Burn.Statistics.Types
                  , Burn.Storage
                  , Burn.Types
-                 , Peridot.Diffable
-                 , Peridot.TimeSeries
-                 , Peridot.Types
   build-depends: aeson
                , base >= 4.6 && <= 5
                , bytestring
@@ -55,18 +52,17 @@ library
                , lens
                , mtl
                , optparse-applicative
+               , peridot
                , profunctors
                , servant      >= 0.9.1.1
                , servant-client
                , servant-server  >= 0.9.1.1
-               , singletons
                , statistics
                , stm
                , text
                , time
                , transformers-base
                , vector
-               , vinyl
                , warp
   default-extensions: DataKinds
                     , DefaultSignatures

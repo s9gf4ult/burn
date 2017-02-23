@@ -3,6 +3,7 @@ packages:
   - burn
   - burn-cli
   - burn-gtk
+  - peridot
 extra-deps:
   - http-api-data-0.3.4
   - optparse-applicative-0.13.1.0
