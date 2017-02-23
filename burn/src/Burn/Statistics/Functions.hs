@@ -24,25 +24,7 @@ calculateStats ranges = FL.fold go
       <$> FL.sum
       <*> FL.minimum
       <*> FL.maximum
-      <*> median
       <*> FL.length
-
-median :: (Ord a, Num a, Fractional a) => Fold a (Maybe a)
-median = Fold (flip (:)) [] go
-  where
-    go = \case
-      [] -> Nothing
-      x ->
-        let
-          v = V.fromList $ L.sort x
-          vl = V.length v
-          res =
-            let (d, m) = vl `divMod` 2
-            in case m of
-              0 -> (V.unsafeIndex v (pred d) + V.unsafeIndex v d) / 2
-              1 -> V.unsafeIndex v d
-              _ -> error "impossible module"
-        in Just res
 
 histroFold :: Int -> Fold Double (Maybe (V.Vector Int))
 histroFold ranges = Fold (flip (:)) [] go

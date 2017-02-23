@@ -39,7 +39,6 @@ data LenStatistics = LenStatistics
   { _sSum        :: !NominalDiffTime
   , _sMinLen     :: !(Maybe NominalDiffTime)
   , _sMaxLen     :: !(Maybe NominalDiffTime)
-  , _sMedian     :: !(Maybe NominalDiffTime)
   , _sCount      :: !Int
   } deriving (Eq, Ord, Show)
 

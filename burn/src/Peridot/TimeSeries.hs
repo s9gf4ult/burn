@@ -5,26 +5,31 @@ import Data.Dependent.Map as DM
 import Data.Functor.Identity
 import Data.GADT.Compare
 import Data.GADT.Compare.TH
+import Data.List as L
 import Data.Profunctor
 import Data.Time
+import Data.Vector as V
 import Data.Vinyl
 import Peridot.Types
 
-data StatAgg
-  = StatSum
-  | StatCount
-  | StatMax
+data StatOrd
+  = StatMax
   | StatMin
+  | StatMedian
 
 data Statistics rest val where
-  StatisticsAgg   :: StatAgg -> TimeSeries rest val -> Statistics rest val
-  StatisticsCount :: Statistics rest Int
+  StatisticsOrd
+    :: (Ord val, Medium val)
+    => StatOrd
+    -> TimeSeries rest val
+    -> Statistics rest val
+  StatisticsCount
+    :: Statistics rest Int
 
 data Group rest val where
   GroupAbs :: TimeSeries rest val -> Group rest val
   -- ^ Grouping by absolute value. Each group in result will have
   -- records having same value by specified key
-
 
 -- | The main key for all time series keys. Extendable with custom
 -- type.
@@ -53,25 +58,59 @@ lmapM amb (FoldM step start end) = FoldM step' start end
       b <- amb a
       step x b
 
-aggFold :: (Num a) => StatAgg -> FL.Fold a a
-aggFold = \case
-  StatSum -> FL.sum
+-- | Class of types the medium can be calculated for
+class Medium a where
+  medium :: a -> a -> a
+
+instance {-# OVERLAPPING #-} Medium UTCTime where
+  medium a b
+    | a >= b = addUTCTime (diffUTCTime a b / 2) b
+
+-- | Default instance for all numbers
+instance {-# OVERLAPPABLE #-} (Num a, Fractional a)
+  => Medium a where
+  medium a b = (a + b) / 2
+
+median :: (Ord a, Medium a) => FL.Fold a (Maybe a)
+median = go <$> FL.revList
+  where
+    go = \case
+      [] -> Nothing
+      x ->
+        let
+          v = V.fromList $ L.sort x
+          vl = V.length v
+          res =
+            let (d, m) = vl `divMod` 2
+            in case m of
+              0 -> medium (V.unsafeIndex v (pred d)) (V.unsafeIndex v d)
+              1 -> V.unsafeIndex v d
+              _ -> error "impossible reminder"
+        in Just res
+
+ordFold :: (Ord a, Medium a) => StatOrd -> FL.Fold a (Maybe a)
+ordFold = \case
+  StatMax -> FL.maximum
+  StatMin -> FL.minimum
+  StatMedian -> median
 
 mkStatFoldl
-  :: (GCompare rest, Num val)
+  :: (GCompare rest)
   => Statistics rest val
   -> ErrFold (TSRecord rest) (TSRecord rest)
 mkStatFoldl = \case
   StatisticsCount -> generalize $ fmap toRecord $ FL.length
     where
       toRecord i = DM.singleton (Stats StatisticsCount) $ Identity i
-  key@(StatisticsAgg agg ts) ->
-    lmapM fromRec $ generalize $ fmap toRec $ aggFold agg
+  key@(StatisticsOrd agg ts) ->
+    lmapM fromRec $ generalize $ fmap toRec $ ordFold agg
     where
       fromRec r = case DM.lookup ts r of
         Nothing -> Left "key not found" -- FIXME: usefull error
         Just v  -> Right $ runIdentity v
-      toRec v = DM.singleton (Stats key) $ Identity v
+      toRec = \case
+        Just v  -> DM.singleton (Stats key) $ Identity v
+        Nothing -> DM.empty
 
 squashStatFoldl
   :: (GCompare rest)

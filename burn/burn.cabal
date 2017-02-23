@@ -86,6 +86,7 @@ library
                     , TemplateHaskell
                     , TypeFamilies
                     , TypeOperators
+                    , UndecidableInstances
 
 test-suite spec
   type:             exitcode-stdio-1.0
