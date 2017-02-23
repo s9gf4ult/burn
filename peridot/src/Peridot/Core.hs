@@ -1,4 +1,4 @@
-module Peridot.Types where
+module Peridot.Core where
 
 import Data.DList as DL
 import Data.Dependent.Map as DM

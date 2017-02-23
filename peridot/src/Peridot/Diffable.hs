@@ -27,3 +27,9 @@ instance Diffable UTCTime where
   type Diff UTCTime = NominalDiffTime
   diff = diffUTCTime
   addDiff = addUTCTime
+
+class ( Diffable a, Num (Diff a), Fractional (Diff a)
+      ) =>  DiffFrac a where
+
+instance ( Diffable a, Num (Diff a), Fractional (Diff a)
+         ) =>  DiffFrac a where

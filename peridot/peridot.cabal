@@ -36,9 +36,12 @@ library
                     , TypeFamilies
                     , TypeOperators
                     , UndecidableInstances
-  exposed-modules:     Peridot.Diffable
+  exposed-modules:     Peridot.Auxiliary
+                     , Peridot.Core
+                     , Peridot.Diffable
                      , Peridot.TimeSeries
-                     , Peridot.Types
+                     , Peridot.TimeSeries.Fold
+                     , Peridot.TimeSeries.Keys
   build-depends:       base >= 4.7 && < 5
                      , containers
                      , dependent-map
