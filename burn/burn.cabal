@@ -65,6 +65,7 @@ library
                , time
                , transformers-base
                , vector
+               , vinyl
                , warp
   default-extensions: DataKinds
                     , DeriveFoldable
