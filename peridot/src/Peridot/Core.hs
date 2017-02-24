@@ -1,7 +1,9 @@
 module Peridot.Core where
 
+import Control.Foldl as FL
 import Data.DList as DL
 import Data.Dependent.Map as DM
+import Data.Functor.Identity
 import Data.Map as M
 
 -- | The record is just map of some arbitrary values, all values are
@@ -72,3 +74,8 @@ instance (ColUngroup (b ': s) k f) => ColUngroup ('G ': b ': s) k f where
   type UngroupShape ('G ': b ': s) = 'G ': (UngroupShape (b ': s))
   colUngroup = \case
     Grouped m -> Grouped $ fmap colUngroup m
+
+-- | Foldl which can throw error
+type ErrFold a b = FL.FoldM (Either String) a b
+
+type SimpleRec f = Record f Identity

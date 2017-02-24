@@ -31,6 +31,7 @@ library
                     , MultiParamTypeClasses
                     , MultiWayIf
                     , PolyKinds
+                    , RankNTypes
                     , ScopedTypeVariables
                     , TemplateHaskell
                     , TypeFamilies
@@ -39,8 +40,12 @@ library
   exposed-modules:     Peridot.Auxiliary
                      , Peridot.Core
                      , Peridot.Diffable
+                     , Peridot.Grouping
+                     , Peridot.Grouping.Key
+                     , Peridot.Statistics
+                     , Peridot.Statistics.Fold
+                     , Peridot.Statistics.Key
                      , Peridot.TimeSeries
-                     , Peridot.TimeSeries.Fold
                      , Peridot.TimeSeries.Keys
   build-depends:       base >= 4.7 && < 5
                      , containers
@@ -48,7 +53,7 @@ library
                      , dependent-sum
                      , dependent-sum-template
                      , dlist
-                     , foldl
+                     , foldl >= 1.2.3
                      , profunctors
                      , time
                      , vector
