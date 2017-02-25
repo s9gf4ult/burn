@@ -78,12 +78,17 @@ test-suite test
   default-extensions: DataKinds
                     , FlexibleContexts
                     , GADTs
+                    , MultiParamTypeClasses
                     , NegativeLiterals
                     , OverloadedStrings
+                    , RankNTypes
                     , TemplateHaskell
+                    , ViewPatterns
   build-depends: HUnit
                , base
+               , containers
                , dependent-map
+               , dependent-sum
                , dependent-sum-template
                , dlist
                , peridot

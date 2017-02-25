@@ -1,5 +1,7 @@
 module Peridot.Grouping.Key where
 
+import Data.Dependent.Sum
+import Data.Functor.Identity
 import Data.GADT.Compare
 import Peridot.Auxiliary
 import Peridot.Diffable
@@ -45,5 +47,29 @@ instance (GCompare root) => GCompare (Group root) where
         GLT -> GLT
         GGT -> GGT
       _ -> GLT
+
+instance (GEq root) => EqTag (Group root) Identity where
+  eqTagged ga gb ia ib = case (ga, gb) of
+    (GroupAbs ra, GroupAbs rb) -> case geq ra rb of
+      Just Refl -> ia == ib
+      Nothing -> False
+    (GroupAbs {}, _) -> False
+    (GroupHistro ra ha, GroupHistro rb hb) -> case geq ra rb of
+      Just Refl -> ha == hb && ia == ib
+      Nothing   -> False
+    (GroupHistro {}, _) -> False
+
+instance (GCompare root) => OrdTag (Group root) Identity where
+  compareTagged ga gb ia ib = case (ga, gb) of
+    (GroupAbs ra, GroupAbs rb) -> case gcompare ra rb of
+      GEQ -> compare ia ib
+      x -> weakenOrdering x
+    (GroupAbs {}, _) -> GT
+    (GroupHistro ra ha, GroupHistro rb hb) -> case gcompare ra rb of
+      GEQ -> case compare ha hb of
+        EQ -> compare ia ib
+        x -> x
+      x -> weakenOrdering x
+    (GroupHistro {}, _) -> LT
 
 type WrapGroup root = forall val. Group root val -> root val

@@ -65,7 +65,7 @@ class ColUngroup (s :: [S]) k f where
 instance (GCompare k) => ColUngroup '[ 'G ] k f where
   type UngroupShape '[ 'G ] = '[ 'L ]
   colUngroup = \case
-    Grouped m -> List $ DL.fromList $ fmap merge $ M.toList m
+    Grouped m -> List $ DL.fromList $ fmap merge $ M.toAscList m
       where
         merge :: (DSum k f, Collection '[] k f) -> Record k f
         merge (ka :=> fa, Rec dm) = DM.insert ka fa dm
