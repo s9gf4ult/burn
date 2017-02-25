@@ -19,7 +19,7 @@ data Statistics (root :: * -> *) val where
     -> root val
     -> Statistics root val
   StatisticsFrac
-    :: (Fractional val)
+    :: (Ord val, Fractional val)
     => StatFrac
     -> root val
     -> Statistics root val

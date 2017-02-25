@@ -33,19 +33,22 @@ mkStatFoldl
   => WrapStats root
   -> Statistics root val
   -> ErrFold (SimpleRec root) (SimpleRec root)
-mkStatFoldl wrap = \case
+mkStatFoldl wrap key = case key of
   StatisticsCount -> generalize $ fmap toRecord $ FL.length
     where
       toRecord i = DM.singleton (wrap StatisticsCount) $ Identity i
-  key@(StatisticsOrd agg ts) ->
-    lmapM fromRec $ generalize $ fmap toRec $ ordFold agg
-    where
-      fromRec r = case DM.lookup ts r of
-        Nothing -> Left "key not found" -- FIXME: usefull error
-        Just v  -> Right $ runIdentity v
-      toRec = \case
-        Just v  -> DM.singleton (wrap key) $ Identity v
-        Nothing -> DM.empty
+  StatisticsFrac agg ts -> go ts $ fracFold agg
+  StatisticsOrd agg ts  -> go ts $ ordFold agg
+  where
+    go ts f =
+      let
+        fromRec r = case DM.lookup ts r of
+          Nothing -> Left "key not found" -- FIXME: usefull error
+          Just v  -> Right $ runIdentity v
+        toRec = \case
+          Just v  -> DM.singleton (wrap key) $ Identity v
+          Nothing -> DM.empty
+      in lmapM fromRec $ generalize $ fmap toRec f
 
 squashStatFoldl
   :: (GCompare root)
