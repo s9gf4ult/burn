@@ -33,6 +33,7 @@ library
                     , PolyKinds
                     , RankNTypes
                     , ScopedTypeVariables
+                    , StandaloneDeriving
                     , TemplateHaskell
                     , TypeFamilies
                     , TypeOperators

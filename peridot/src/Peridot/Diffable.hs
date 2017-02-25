@@ -28,8 +28,10 @@ instance Diffable UTCTime where
   diff = diffUTCTime
   addDiff = addUTCTime
 
-class ( Diffable a, Num (Diff a), Fractional (Diff a)
-      ) =>  DiffFrac a where
+instance Diffable TimeOfDay where
+  type Diff TimeOfDay = DiffTime
+  diff a b = timeOfDayToTime a - timeOfDayToTime b
+  addDiff d a = timeToTimeOfDay $ d + timeOfDayToTime a
 
-instance ( Diffable a, Num (Diff a), Fractional (Diff a)
-         ) =>  DiffFrac a where
+class ( Diffable a, RealFrac (Diff a)) =>  DiffRealFrac a where
+instance ( Diffable a, RealFrac (Diff a)) =>  DiffRealFrac a where
