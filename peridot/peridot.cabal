@@ -41,6 +41,7 @@ library
                      , Peridot.Core
                      , Peridot.Diffable
                      , Peridot.Grouping
+                     , Peridot.Grouping.Group
                      , Peridot.Grouping.Key
                      , Peridot.Statistics
                      , Peridot.Statistics.Fold

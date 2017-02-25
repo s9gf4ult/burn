@@ -63,6 +63,5 @@ foldOverStats
   :: (GCompare root)
   => WrapStats root
   -> Rec (Statistics root) vals
-  -> DList (SimpleRec root)
-  -> Either String (SimpleRec root)
+  -> RecFolder ErrMonad root Identity
 foldOverStats wrap stats dlist = FL.foldM (squashStatFoldl wrap stats) dlist
