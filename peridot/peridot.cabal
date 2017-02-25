@@ -50,6 +50,7 @@ library
                      , Peridot.Grouping
                      , Peridot.Grouping.Group
                      , Peridot.Grouping.Key
+                     , Peridot.Root
                      , Peridot.Statistics
                      , Peridot.Statistics.Fold
                      , Peridot.Statistics.Key
