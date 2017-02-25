@@ -20,43 +20,43 @@ data Collection (s :: [S]) (k :: key -> *) (f :: key -> *) where
   List    :: DList (Record k f)           -> Collection '[ 'L ] k f
   Grouped :: Map (DSum k f) (Collection s k f) -> Collection ('G ': s) k f
 
-type RecFolder k f = DList (Record k f) -> Record k f
+type RecFolder m k f = DList (Record k f) -> m (Record k f)
 
-class ColFold (s :: [S]) k f where
+class ColFold (m :: * -> *) (s :: [S]) k f where
   type FoldShape (s :: [S]) :: [S]
   colFold
-    :: RecFolder k f
+    :: RecFolder m k f
     -> Collection s k f
-    -> Collection (FoldShape s) k f
+    -> m (Collection (FoldShape s) k f)
 
-instance ColFold '[ 'L ] k f where
+instance (Functor m) => ColFold m '[ 'L ] k f where
   type FoldShape '[ 'L ] = '[]
   colFold f = \case
-    List dl -> Rec $ f dl
+    List dl -> Rec <$> f dl
 
-instance (ColFold rest k f) => ColFold ('G ': rest) k f where
+instance (ColFold m rest k f, Applicative m) => ColFold m ('G ': rest) k f where
   type FoldShape ('G ': rest) = 'G ': (FoldShape rest)
   colFold f = \case
-    Grouped m -> Grouped $ fmap (colFold f) m
+    Grouped m -> Grouped <$> traverse (colFold f) m
 
-type RecGrouper k f = DList (Record k f) -> Map (DSum k f) (DList (Record k f))
+type RecGrouper m k f = DList (Record k f) -> m (Map (DSum k f) (DList (Record k f)))
 
-class ColGroup (s :: [S]) k f where
+class ColGroup (m :: * -> *) (s :: [S]) k f where
   type GroupShape (s :: [S]) :: [S]
   colGroup
-    :: RecGrouper k f
+    :: RecGrouper m k f
     -> Collection s k f
-    -> Collection (GroupShape s) k f
+    -> m (Collection (GroupShape s) k f)
 
-instance ColGroup '[ 'L ] k f where
+instance (Functor m) => ColGroup m '[ 'L ] k f where
   type GroupShape '[ 'L ] = '[ 'G, 'L ]
   colGroup f = \case
-    List dl -> Grouped $ fmap List $ f dl
+    List dl -> (Grouped . fmap List) <$> f dl
 
-instance (ColGroup rest k f) => ColGroup ('G ': rest) k f where
+instance (ColGroup m rest k f, Applicative m) => ColGroup m ('G ': rest) k f where
   type GroupShape ('G ': rest) = 'G ': (GroupShape rest)
   colGroup f = \case
-    Grouped m -> Grouped $ fmap (colGroup f) m
+    Grouped m -> Grouped <$> traverse (colGroup f) m
 
 class ColUngroup (s :: [S]) k f where
   type UngroupShape s :: [S]
@@ -75,7 +75,10 @@ instance (ColUngroup (b ': s) k f) => ColUngroup ('G ': b ': s) k f where
   colUngroup = \case
     Grouped m -> Grouped $ fmap colUngroup m
 
+-- TODO: make errors more usable
+type ErrMonad = Either String
 -- | Foldl which can throw error
-type ErrFold a b = FL.FoldM (Either String) a b
+type ErrFold a b = FL.FoldM ErrMonad a b
+
 
 type SimpleRec f = Record f Identity
