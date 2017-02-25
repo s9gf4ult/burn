@@ -105,4 +105,3 @@ test-suite spec
                , tasty-hunit
                , time
                , transformers-base
-  ghc-options: -Wall -threaded

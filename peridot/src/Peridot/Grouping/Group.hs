@@ -23,7 +23,7 @@ absGroup wrap key dlist =
       Just val -> Right (wrap (GroupAbs key) :=> val, pure r)
 
 histroGroup
-  :: (OrdTag root Identity, DiffRealFrac val)
+  :: (OrdTag root Identity, DiffRealFrac val, Ord val)
   => WrapGroup root
   -> root val
   -> Histro val

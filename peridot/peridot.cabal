@@ -1,6 +1,6 @@
 name:                peridot
 version:             0.0.1
-synopsis:            Kinda framework for dynamic statistical reports
+synopsis:            Kinda framework for typesafe statistical reports
 -- description:
 homepage:            https://github.com/githubuser/peridot#readme
 license:             BSD3
@@ -13,8 +13,13 @@ build-type:          Simple
 extra-source-files:  README.md
 cabal-version:       >=1.10
 
+source-repository head
+  type:     git
+  location: https://github.com/githubuser/peridot
+
 library
   hs-source-dirs:      src
+  ghc-options: -Wall
   default-extensions: DataKinds
                     , DefaultSignatures
                     , DeriveFoldable
@@ -38,7 +43,8 @@ library
                     , TypeFamilies
                     , TypeOperators
                     , UndecidableInstances
-  exposed-modules:     Peridot.Auxiliary
+  exposed-modules:     Peridot
+                     , Peridot.Auxiliary
                      , Peridot.Core
                      , Peridot.Diffable
                      , Peridot.Grouping
@@ -63,6 +69,25 @@ library
 
   default-language:    Haskell2010
 
-source-repository head
-  type:     git
-  location: https://github.com/githubuser/peridot
+test-suite test
+  type:             exitcode-stdio-1.0
+  hs-source-dirs:   test
+  main-is:          Test.hs
+  ghc-options: -Wall -threaded
+  default-language: Haskell2010
+  default-extensions: DataKinds
+                    , FlexibleContexts
+                    , GADTs
+                    , NegativeLiterals
+                    , OverloadedStrings
+                    , TemplateHaskell
+  build-depends: HUnit
+               , base
+               , dependent-map
+               , dependent-sum-template
+               , dlist
+               , peridot
+               , tasty
+               , tasty-hunit
+               , time
+               , vinyl

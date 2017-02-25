@@ -1,15 +1,17 @@
 module Peridot.Auxiliary where
 
 import Control.Foldl as FL
+import Data.GADT.Compare
 import Data.List as L
 import Data.Vector as V
 import Peridot.Diffable
 
--- medium :: (Fractional a) => a -> a -> a
--- medium a b = case compare a b of
---   EQ -> a
---   GT -> addDiff (diff a b / 2) b
---   LT -> addDiff (diff b a / 2) a
+hardenOrdering :: Ordering -> GOrdering a a
+hardenOrdering = \case
+  GT -> GGT
+  LT -> GLT
+  EQ -> GEQ
+
 
 median :: (Ord a, Fractional a) => FL.Fold a (Maybe a)
 median = go <$> FL.revList

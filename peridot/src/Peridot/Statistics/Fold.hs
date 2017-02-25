@@ -37,8 +37,8 @@ mkStatFoldl wrap key = case key of
   StatisticsCount -> generalize $ fmap toRecord $ FL.length
     where
       toRecord i = DM.singleton (wrap StatisticsCount) $ Identity i
-  StatisticsFrac agg ts -> go ts $ fracFold agg
-  StatisticsOrd agg ts  -> go ts $ ordFold agg
+  StatisticsFrac ts agg -> go ts $ fracFold agg
+  StatisticsOrd ts agg  -> go ts $ ordFold agg
   where
     go ts f =
       let
