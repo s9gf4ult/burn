@@ -24,9 +24,10 @@ import System.Process
 
 -- | Hooks to run when on some events
 data Controller = Controller
-  { _cStartPomodoro :: IO ()
-  , _cStartPause    :: IO ()
-  , _cTick          :: IO ()
+  { _cStartPomodoro :: !(IO ())
+  , _cStartPause    :: !(IO ())
+  , _cTick          :: !(IO ())
+  , _cSetTags       :: !(Tags -> IO ())
   }
 
 makeLenses ''Controller
@@ -122,12 +123,16 @@ newController hp v pbs = do
             writeTVar clientState newClient
             return notifs
           traverse_ showNotification notifs
-
-  return $ Controller
-    { _cStartPomodoro = method startPomodoro
-    , _cStartPause    = method startPause
-    , _cTick          = method status
-    }
+    result = Controller
+      { _cStartPomodoro = method startPomodoro
+      , _cStartPause    = method startPause
+      , _cTick          = method status
+      , _cSetTags = \tags -> do
+          atomically $ do
+            modifyTVar clientModel $ mTags .~ tags
+          method $ setTags $ tags ^. _Tags
+      }
+  return result
   where
     showNotification = \case
       PomodoroFinished ->
@@ -135,14 +140,16 @@ newController hp v pbs = do
       PauseFinished ->
         void $ rawSystem "notify-send" ["-t", "0", "Go to work, lazy ass!"]
 
-
 connectSignals :: View -> Controller -> IO ()
 connectSignals v c = do
-  _ <- on (v ^. vMain) deleteEvent (False <$ liftBase mainQuit)
-  _ <- on (v ^. vStartPomodoro) buttonActivated $ c ^. cStartPomodoro
-  _ <- on (v ^. vStartPause) buttonActivated $ c ^. cStartPause
+  void $ on (v ^. vMain) deleteEvent (False <$ liftBase mainQuit)
+  void $ on (v ^. vStartPomodoro) buttonActivated $ c ^. cStartPomodoro
+  void $ on (v ^. vStartPause) buttonActivated $ c ^. cStartPause
+  void $ on (v ^. vTags) entryActivated $ do
+    t <- entryGetText $ v ^. vTags
+    (c ^. cSetTags) $ Tags $ T.strip <$> T.words t
+
   _ <- forkIO $ forever $ do
     threadDelay 1e6
     c ^. cTick
-
   return ()
