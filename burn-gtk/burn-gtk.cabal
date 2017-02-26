@@ -23,6 +23,7 @@ library
   ghc-options: -Wall
   exposed-modules: Burn.Gtk
                  , Burn.Gtk.Controller
+                 , Burn.Gtk.Model
                  , Burn.Gtk.Run
                  , Burn.Gtk.View
   build-depends: base >= 4.6 && < 5
@@ -32,6 +33,7 @@ library
                , gtk3
                , http-client
                , lens
+               , containers
                , optparse-applicative
                , process
                , servant >= 0.9.1.1

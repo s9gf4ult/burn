@@ -2,6 +2,7 @@ module Burn.Gtk.Controller where
 
 import Burn.API
 import Burn.Client
+import Burn.Gtk.Model
 import Burn.Gtk.View
 import Burn.Optparse
 import Control.Concurrent
@@ -13,11 +14,11 @@ import Data.Default
 import Data.Foldable
 import Data.Maybe
 import Data.Monoid
+import Data.Set as S
 import Data.Text as T
 import Data.Time
 import Formatting hiding (now)
 import Graphics.UI.Gtk
-import Network.HTTP.Client
 import Servant.Client
 import System.Process
 
@@ -60,10 +61,10 @@ formatTimeDiff (truncate -> seconds) =
       | otherwise -> ms
   in res
 
-updateView :: View -> Pixbufs -> UTCTime -> ServerState -> IO ()
-updateView v pbs now s = do
-  print s
+updateView :: View -> Pixbufs -> TVar Model -> ServerState -> IO ()
+updateView v pbs tModel s = do
   let
+    now = s ^. sLastMsg
     formatCounting c =
       let
         passed = formatTimeDiff $ diffUTCTime now $ c ^. cStarted
@@ -85,10 +86,20 @@ updateView v pbs now s = do
       Waiting             -> pbs ^. pInit
       PomodoroCounting {} -> pbs ^. pPomodoro
       PauseCounting {}    -> pbs ^. pPause
+  mNewTags <- atomically $ do
+    model <- readTVar tModel
+    let
+      newT = s ^. sTags
+      oldT = model ^. mTags . _Tags
+    writeTVar tModel $ model & (mTags . _Tags) .~ newT
+    return $ if S.fromList oldT == S.fromList newT
+             then Nothing
+             else Just newT
   postGUISync $ do
     labelSetText (v ^. vCounter) counterText
     labelSetText (v ^. vTimeSpent) timeSpent
-    entrySetText (v ^. vTags) $ T.unwords $ s ^. sTags
+    for_ mNewTags $ \tags -> do
+      entrySetText (v ^. vTags) $ T.unwords tags
     statusIconSetFromPixbuf (v ^. vStatusIcon) pbuf
     statusIconSetTooltipText (v ^. vStatusIcon) $ Just counterText
 
@@ -96,14 +107,15 @@ newController :: HostPort -> View -> Pixbufs -> IO Controller
 newController hp v pbs = do
   env <- hostPortClientEnv hp
   clientState <- newTVarIO def
+  clientModel <- newTVarIO def
   let
     method clientCall = void $ forkIO $ do
       resp <- runClientM clientCall env
       case resp of
         Left e -> print e
         Right newSt -> do
-          now <- getCurrentTime         -- FIXME: get from server
-          updateView v pbs now newSt
+          let now = newSt ^. sLastMsg
+          updateView v pbs clientModel newSt
           notifs <- atomically $ do
             oldClient <- readTVar clientState
             let (newClient, notifs) = updateState now newSt oldClient

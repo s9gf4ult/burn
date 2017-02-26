@@ -61,6 +61,7 @@ handleMessage evt p = liftBase $ do
   (settings, (newSt, actions)) <- atomically $ do
     state <- readTVar $ p ^. pState
     settings <- readTVar $ p ^. pSettings
+    check $ state ^. sLastMsg < now
     let res@(newSt, _) = process settings tz msg state
     writeTVar (p ^. pState) newSt
     return (settings, res)

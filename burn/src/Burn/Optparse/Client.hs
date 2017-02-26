@@ -4,6 +4,7 @@ import Burn.Optparse.Settings
 import Burn.Types
 import Control.Lens
 import Data.Monoid
+import Data.Text
 import Data.Traversable
 import Options.Applicative
 
@@ -15,7 +16,7 @@ data Command
   | CSetTags Tags
   deriving (Eq, Ord, Show)
 
-readCommand :: T.Text -> Either String Command
+readCommand :: Text -> Either String Command
 readCommand t = case T.strip <$> T.words t of
   ["pomodoro"]  -> Right CPomodoro
   ["pause"]     -> Right CPause
