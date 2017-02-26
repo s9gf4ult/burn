@@ -12,31 +12,31 @@ import Data.Time
 import Data.Vector as V
 import Statistics.Sample.Histogram
 
-calculateStats
-  :: (Foldable f)
-  => Int
-     -- ^ Histrogram ranges
-  -> f NominalDiffTime
-  -> LenStatistics
-calculateStats ranges = FL.fold go
-  where
-    go = LenStatistics
-      <$> FL.sum
-      <*> FL.minimum
-      <*> FL.maximum
-      <*> FL.length
+-- calculateStats
+--   :: (Foldable f)
+--   => Int
+--      -- ^ Histrogram ranges
+--   -> f NominalDiffTime
+--   -> LenStatistics
+-- calculateStats ranges = FL.fold go
+--   where
+--     go = LenStatistics
+--       <$> FL.sum
+--       <*> FL.minimum
+--       <*> FL.maximum
+--       <*> FL.length
 
-histroFold :: Int -> Fold Double (Maybe (V.Vector Int))
-histroFold ranges = Fold (flip (:)) [] go
-  where
-    go :: [Double] -> Maybe (V.Vector Int)
-    go [] = Nothing
-    go x =
-      let
-        lo = F.minimum x
-        hi = F.maximum x
-        h = histogram_ ranges lo hi $ V.fromList x
-      in Just h
+-- histroFold :: Int -> Fold Double (Maybe (V.Vector Int))
+-- histroFold ranges = Fold (flip (:)) [] go
+--   where
+--     go :: [Double] -> Maybe (V.Vector Int)
+--     go [] = Nothing
+--     go x =
+--       let
+--         lo = F.minimum x
+--         hi = F.maximum x
+--         h = histogram_ ranges lo hi $ V.fromList x
+--       in Just h
 
 -- | Calculates corrected day according to given day end
 timeDay

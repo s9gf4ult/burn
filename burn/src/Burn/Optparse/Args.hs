@@ -10,7 +10,7 @@ import Options.Applicative
 data Args
   = Server ServerArgs
   | Client ClientArgs
-  | Statistics StatQuery
+  | Statistics StatArgs
 
 makePrisms ''Args
 
@@ -23,7 +23,7 @@ argsParser = helper <*> go
       $ progDesc "server options" <> fullDesc
     client = command "client" $ info (helper <*> clientArgs)
       $ progDesc "client options" <> fullDesc
-    stat = command "stat" $ info (helper <*> statQuery)
+    stat = command "stat" $ info (helper <*> statArgs)
       $ progDesc "statistics options" <> fullDesc
 
 argsParserInfo :: ParserInfo Args

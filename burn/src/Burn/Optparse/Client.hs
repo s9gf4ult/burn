@@ -1,6 +1,6 @@
 module Burn.Optparse.Client where
 
-import Burn.Optparse.Server
+import Burn.Optparse.Settings
 import Burn.Types
 import Control.Lens
 import Data.Default

@@ -26,6 +26,7 @@ library
                  , Burn.Optparse.Args
                  , Burn.Optparse.Client
                  , Burn.Optparse.Server
+                 , Burn.Optparse.Settings
                  , Burn.Optparse.Statistics
                  , Burn.Server
                  , Burn.Server.Handler

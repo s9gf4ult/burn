@@ -64,27 +64,25 @@ runBurnClient ca = case ca ^. caCommands of
     for_ commands $ \c -> do
       executeCommand env c
 
-printStatResult :: StatsResult -> IO ()
-printStatResult sr = T.putStrLn t
-  where
-    t = day <> ": " <> results
-    day = T.pack $ show $ sr ^. srTime
-    ls = sr ^. srStatData . _SDSummary
-    results
-      = (m " sum: " $ ls ^. sSum . re _Just)
-      <> (m " min: " $ ls ^. sMinLen)
-      <> (m " max: " $ ls ^. sMaxLen)
-      <> (m " median: " $ ls ^. sMedian)
-      <> (sformat (" count: " % shown) $ ls ^. sCount)
-    m t v = maybe "" (sformat (t % hms) . timeToTimeOfDay . realToFrac) v
+-- printStatResult :: StatsResult -> IO ()
+-- printStatResult sr = T.putStrLn t
+--   where
+--     t = day <> ": " <> results
+--     day = T.pack $ show $ sr ^. srTime
+--     ls = sr ^. srStatData . _SDSummary
+--     results
+--       = (m " sum: " $ ls ^. sSum . re _Just)
+--       <> (m " min: " $ ls ^. sMinLen)
+--       <> (m " max: " $ ls ^. sMaxLen)
+--       <> (m " median: " $ ls ^. sMedian)
+--       <> (sformat (" count: " % shown) $ ls ^. sCount)
+--     m t v = maybe "" (sformat (t % hms) . timeToTimeOfDay . realToFrac) v
 
 
-runBurnStats :: StatQuery -> IO ()
-runBurnStats q = do
-  p <- loadPomodors $ def ^. sDataFile -- FIXME: from options
-  let mres = execStatsQuery (def ^. sDayEnd) q p
-  for_ mres $ \res -> do
-    traverse_ printStatResult res
+runBurnStats :: StatArgs -> IO ()
+runBurnStats (StatArgs s q) = do
+  p <- loadPomodors $ s ^. sDataFile -- FIXME: from options
+  printStatsQuery (s ^. sDayEnd) q p
 
 burnCli :: Args -> IO ()
 burnCli = \case
