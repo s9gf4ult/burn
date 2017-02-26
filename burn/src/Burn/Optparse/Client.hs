@@ -21,7 +21,7 @@ readCommand t = case T.strip <$> T.words t of
   ["pomodoro"]  -> Right CPomodoro
   ["pause"]     -> Right CPause
   ("tags":tags) -> Right $ CSetTags $ Tags tags
-  (x:_)         -> Left $ "unknown command" <> T.unpack x
+  (x:_)         -> Left $ "unknown command \"" <> T.unpack x <> "\""
   []            -> Left "empty command string"
 
 commands :: Parser [Command]
@@ -31,7 +31,7 @@ commands = option go m
       <> help "Space separated list of commands" <> value []
     go = do
       s <- T.pack <$> str
-      for (T.splitOn "," s) $ \c -> case readCommand c of
+      for (T.splitOn "," s) $ \c -> case readCommand $ T.strip c of
         Left e -> readerError e
         Right a -> return a
 
