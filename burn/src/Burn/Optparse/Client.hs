@@ -3,22 +3,25 @@ module Burn.Optparse.Client where
 import Burn.Optparse.Settings
 import Burn.Types
 import Control.Lens
-import Data.Default
 import Data.Monoid
-import Data.Time
 import Data.Traversable
 import Options.Applicative
 
+import qualified Data.Text as T
+
 data Command
-  = Pomodoro
-  | Pause
+  = CPomodoro
+  | CPause
+  | CSetTags Tags
   deriving (Eq, Ord, Show)
 
-readCommand :: String -> Either String Command
-readCommand = \case
-  "pomodoro" -> Right Pomodoro
-  "pause"    -> Right Pause
-  e          -> Left $ "Unknown command: " ++ e
+readCommand :: T.Text -> Either String Command
+readCommand t = case T.strip <$> T.words t of
+  ["pomodoro"]  -> Right CPomodoro
+  ["pause"]     -> Right CPause
+  ("tags":tags) -> Right $ CSetTags $ Tags tags
+  (x:_)         -> Left $ "unknown command" <> T.unpack x
+  []            -> Left "empty command string"
 
 commands :: Parser [Command]
 commands = option go m
@@ -26,8 +29,8 @@ commands = option go m
     m = long "commands" <> short 'c'
       <> help "Space separated list of commands" <> value []
     go = do
-      s <- str
-      for (words s) $ \c -> case readCommand c of
+      s <- T.pack <$> str
+      for (T.splitOn "," s) $ \c -> case readCommand c of
         Left e -> readerError e
         Right a -> return a
 

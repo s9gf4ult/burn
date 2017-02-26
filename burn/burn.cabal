@@ -80,6 +80,7 @@ library
                     , LambdaCase
                     , MultiParamTypeClasses
                     , MultiWayIf
+                    , OverloadedStrings
                     , PolyKinds
                     , ScopedTypeVariables
                     , TemplateHaskell

@@ -28,8 +28,9 @@ import Servant.Server
 executeCommand :: ClientEnv -> Command -> IO ()
 executeCommand env command = do
   void $ either throwIO return =<< case command of
-    Pomodoro -> runClientM startPomodoro env
-    Pause -> runClientM startPause env
+    CPomodoro -> runClientM startPomodoro env
+    CPause -> runClientM startPause env
+    CSetTags (Tags tags) -> runClientM (setTags tags) env
 
 initPayload :: Settings -> IO Payload
 initPayload settings = do
