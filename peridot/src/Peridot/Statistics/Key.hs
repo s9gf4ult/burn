@@ -1,7 +1,7 @@
 module Peridot.Statistics.Key where
 
 import Data.Dependent.Sum
-import Data.Functor.Identity
+import Data.Functor.Classes
 import Data.GADT.Compare
 import Peridot.Auxiliary
 
@@ -66,28 +66,28 @@ instance GCompare root => GCompare (Statistics root) where
       StatisticsCount -> GEQ
       _               -> GLT
 
-instance (GEq root) => EqTag (Statistics root) Identity where
+instance (GEq root, Eq1 f) => EqTag (Statistics root) f where
   eqTagged sa sb ia ib = case sa of
     StatisticsOrd ra orda -> case sb of
       StatisticsOrd rb ordb -> case geq ra rb of
-        Just Refl -> orda == ordb && ia == ib
+        Just Refl -> orda == ordb && eq1 ia ib
         Nothing -> False
       _ -> False
     StatisticsFrac ra fa -> case sb of
       StatisticsFrac rb fb -> case geq ra rb of
-        Just Refl -> fa == fb && ia == ib
+        Just Refl -> fa == fb && eq1 ia ib
         Nothing -> False
       _ -> False
     StatisticsCount -> case sb of
-      StatisticsCount -> ia == ib
+      StatisticsCount -> eq1 ia ib
       _ -> False
 
-instance (GCompare root) => OrdTag (Statistics root) Identity where
+instance (GCompare root, Ord1 f) => OrdTag (Statistics root) f where
   compareTagged sa sb ia ib = case sa of
     StatisticsOrd ra orda -> case sb of
       StatisticsOrd rb ordb -> case gcompare ra rb of
         GEQ -> case compare orda ordb of
-          EQ -> compare ia ib
+          EQ -> compare1 ia ib
           x -> x
         x -> weakenOrdering x
       _ -> GT
@@ -95,12 +95,12 @@ instance (GCompare root) => OrdTag (Statistics root) Identity where
       StatisticsOrd {} -> LT
       StatisticsFrac rb fb -> case gcompare ra rb of
         GEQ -> case compare fa fb of
-          EQ -> compare ia ib
+          EQ -> compare1 ia ib
           x -> x
         x -> weakenOrdering x
       _ -> GT
     StatisticsCount -> case sb of
-      StatisticsCount -> compare ia ib
+      StatisticsCount -> compare1 ia ib
       _ -> LT
 
 

@@ -54,8 +54,6 @@ library
                      , Peridot.Statistics
                      , Peridot.Statistics.Fold
                      , Peridot.Statistics.Key
-                     , Peridot.TimeSeries
-                     , Peridot.TimeSeries.Keys
   build-depends:       base >= 4.7 && < 5
                      , containers
                      , dependent-map
@@ -65,6 +63,7 @@ library
                      , foldl >= 1.2.3
                      , profunctors
                      , time
+                     , transformers
                      , vector
                      , vinyl
 
