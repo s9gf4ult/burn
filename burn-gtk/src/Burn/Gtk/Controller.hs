@@ -12,13 +12,15 @@ import Control.Monad
 import Control.Monad.Base
 import Data.Default
 import Data.Foldable
-import Data.Maybe
+import Data.List as L
+import Data.Map.Strict as M
 import Data.Monoid
 import Data.Set as S
 import Data.Text as T
 import Data.Time
 import Formatting hiding (now)
-import Graphics.UI.Gtk
+import Graphics.UI.Gtk as Gtk
+import Graphics.UI.Gtk.General.Enums
 import Servant.Client
 import System.Process
 
@@ -62,6 +64,57 @@ formatTimeDiff (truncate -> seconds) =
       | otherwise -> ms
   in res
 
+-- | Infer pomodor from current server state
+currentPomodor :: ServerState -> Maybe (PomodoroData UTCTime)
+currentPomodor s =
+  let
+    counting = s ^? sBurn . _PomodoroCounting . _2
+    started  = counting ^? _Just . cStarted
+    now      = s ^. sLastMsg
+    len      = diffUTCTime now <$> started
+    tags     = Tags $ s ^. sTags
+  in PomodoroData <$> started <*> len <*> pure tags
+
+-- | Remove all packed witdgets and add new grid widget with given text
+updateTagsCounts :: Expander -> TVar (Maybe Grid) -> [(Text, Text)] -> IO ()
+updateTagsCounts byTags gridVar texts = do
+  grid <- gridNew
+  for_ (L.zip [0..] texts) $ \(row, (lText, rText)) -> do
+    let
+      lbl t = do
+        w <- labelNew $ Just t
+        Gtk.set w [widgetExpand := True]
+        widgetSetHAlign w AlignStart
+        widgetSetVAlign w AlignFill
+        labelSetJustify w JustifyLeft
+        return w
+    lLabel <- lbl lText
+    Gtk.set lLabel [widgetMarginLeft := 30]
+    rLabel <- lbl rText
+    gridAttach grid lLabel 0 row 1 1
+    gridAttach grid rLabel 1 row 1 1
+  oldGrid <- atomically $ do
+    old <- readTVar gridVar
+    writeTVar gridVar $ Just grid
+    return old
+  for_ oldGrid $ \og -> do
+    containerRemove byTags og
+  containerAdd byTags grid
+  widgetShowAll grid
+
+byTagTimes :: [PomodoroData UTCTime] -> [(Text, Text)]
+byTagTimes pomodors =
+  let
+    byTag = M.fromListWith (<>) $ do
+      pmd <- pomodors
+      tag <- pmd ^. pdTags . _Tags
+      return (tag, [pmd])
+    fmt (tag, p) =
+      (tag, formatTimeDiff $ sumOf (folded . pdLen) p)
+    noTag = fmt ("No tag", pomodors ^.. folded . filtered (views (pdTags . _Tags) (== [])))
+    tagged = fmt <$> M.toAscList byTag
+  in noTag : tagged
+
 updateView :: View -> Pixbufs -> TVar Model -> ServerState -> IO ()
 updateView v pbs tModel s = do
   let
@@ -75,14 +128,8 @@ updateView v pbs tModel s = do
       Waiting -> "--:--"
       PomodoroCounting _ c -> "P " <> formatCounting c
       PauseCounting c -> "  " <> formatCounting c
-    currentPomodor =
-      let
-        mPassed = s ^? sBurn . _PomodoroCounting . _2 . cStarted
-          . to (diffUTCTime now)
-      in fromMaybe 0 mPassed
-    todayPomodoros = sumOf (sTodayPomodors . folded . pdLen) s
-    spentSeconds = currentPomodor + todayPomodoros
-    timeSpent = formatTimeDiff $ spentSeconds
+    allPomodors = (currentPomodor s ^.. _Just) ++ (s ^. sTodayPomodors)
+    timeSpent = formatTimeDiff $ sumOf (folded . pdLen) allPomodors
     pbuf = case s ^. sBurn of
       Waiting             -> pbs ^. pInit
       PomodoroCounting {} -> pbs ^. pPomodoro
@@ -103,6 +150,7 @@ updateView v pbs tModel s = do
       entrySetText (v ^. vTags) $ T.unwords tags
     statusIconSetFromPixbuf (v ^. vStatusIcon) pbuf
     statusIconSetTooltipText (v ^. vStatusIcon) $ Just counterText
+    updateTagsCounts (v ^. vByTags) (v ^. vTagsGrid) $ byTagTimes allPomodors
 
 newController :: HostPort -> View -> Pixbufs -> IO Controller
 newController hp v pbs = do
