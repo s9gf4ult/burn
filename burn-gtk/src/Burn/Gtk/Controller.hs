@@ -98,7 +98,7 @@ updateTagsCounts byTags gridVar texts = do
     writeTVar gridVar $ Just grid
     return old
   for_ oldGrid $ \og -> do
-    containerRemove byTags og
+    widgetDestroy og
   containerAdd byTags grid
   widgetShowAll grid
 
