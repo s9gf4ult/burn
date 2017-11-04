@@ -10,6 +10,7 @@ import Control.Concurrent.STM
 import Control.Exception
 import Control.Lens
 import Control.Monad
+import Control.Monad.Trans
 import Data.Default
 import Data.Foldable
 import Data.List as L
@@ -97,9 +98,10 @@ runElastic es = do
   withBH defaultManagerSettings server $ do
 
     for_ (L.zip (V.toList p) [0..]) $ \(pomodoro, docId) -> do
-      indexDocument (es ^. esIndexName) (MappingName "pomodoros") ids
+      reply <- indexDocument (es ^. esIndexName) (MappingName "pomodoros") ids
         (elasticPomodoro $ fmap zonedTimeToUTC pomodoro)
         (DocId $ T.pack $ show docId)
+      lift $ print reply
 
 burnCli :: Args -> IO ()
 burnCli = \case

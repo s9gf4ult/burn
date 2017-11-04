@@ -16,7 +16,7 @@ import Options.Applicative
 import Text.Inflections
 
 data ElasticPomodoro = ElasticPomodoro
-  { _epTimestamp :: POSIXTime
+  { _epTimestamp :: Int64
   , _epTags      :: [Text]
   , _epDuration  :: Int64
   }
@@ -28,7 +28,7 @@ deriveJSON
 
 elasticPomodoro :: PomodoroData UTCTime -> ElasticPomodoro
 elasticPomodoro p = ElasticPomodoro
-  { _epTimestamp = p ^. pdStarted . to utcTimeToPOSIXSeconds
+  { _epTimestamp = round $ (p ^. pdStarted . to utcTimeToPOSIXSeconds) * 1e3
   , _epTags      = p ^. pdTags . _Tags
   , _epDuration  = p ^. pdLen . to round
   }
