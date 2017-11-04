@@ -5,6 +5,7 @@ packages:
   - burn-gtk
   - peridot
 extra-deps:
+  - bloodhound-0.15.0.0
   - foldl-1.2.3
   - http-api-data-0.3.4
   - optparse-applicative-0.13.1.0

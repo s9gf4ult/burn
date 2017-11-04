@@ -20,6 +20,7 @@ library
   ghc-options: -Wall
   exposed-modules: Burn.Cli
   build-depends: base >= 4.6 && <= 5
+               , bloodhound
                , burn
                , data-default
                , formatting

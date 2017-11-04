@@ -27,13 +27,19 @@ hostPort = HostPort
     port = long "port" <> short 'p'
       <> help "Port" <> value (def ^. hpPort)
 
+pomodorosFile :: Parser FilePath
+pomodorosFile = strOption filePath
+  where
+    filePath = long "file" <> short 'f'
+      <> help "CSV file with pomodors to store" <> value (def ^. sDataFile)
+
 settings :: Parser Settings
 settings = Settings
   <$> option timeReader pomLen
   <*> option timeReader pauseLen
   <*> option timeReader longPause
   <*> option todReader eod
-  <*> strOption filePath
+  <*> pomodorosFile
   where
     timeReader = do
       tod <- todReader
@@ -47,5 +53,3 @@ settings = Settings
       <> value (def ^. sLongPause)
     eod = long "end-of-day" <> help "Time when your day realy ends"
       <> value (def ^. sDayEnd)
-    filePath = long "file" <> short 'f' <> help "CSV file with pomodors to store"
-      <> value (def ^. sDataFile)
