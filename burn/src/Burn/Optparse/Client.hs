@@ -28,7 +28,7 @@ commands :: Parser [Command]
 commands = option go m
   where
     m = long "commands" <> short 'c'
-      <> help "Space separated list of commands" <> value []
+      <> help "Comma separated list of commands" <> value []
     go = do
       s <- T.pack <$> str
       for (T.splitOn "," s) $ \c -> case readCommand $ T.strip c of

@@ -10,18 +10,24 @@ import Control.Concurrent.STM
 import Control.Exception
 import Control.Lens
 import Control.Monad
+import Control.Monad.Trans
 import Data.Default
 import Data.Foldable
+import Data.List as L
 import Data.Monoid
 import Data.String
 import Data.Text as T
 import Data.Text.IO as T
 import Data.Time
 import Data.Vector as V
+import Database.V5.Bloodhound.Client
+import Database.V5.Bloodhound.Types
+  (IndexDocumentSettings(..), VersionControl(..), DocId(..), MappingName(..))
 import Formatting
 import Formatting.Time
 import Network.HTTP.Client
 import Network.Wai.Handler.Warp hiding (Settings)
+import Prelude as P
 import Servant.Client
 import Servant.Server
 
@@ -85,8 +91,26 @@ runBurnStats (StatArgs s q) = do
   p <- loadPomodors $ s ^. sDataFile -- FIXME: from options
   printStatsQuery (s ^. sDayEnd) q p
 
+runElastic :: ElasticArgs -> IO ()
+runElastic es = do
+  p <- loadPomodors $ es ^. esDataFile
+  let ids    = IndexDocumentSettings NoVersionControl Nothing
+      server = es ^. esElasticServer
+  withBH defaultManagerSettings server $ do
+
+    for_ (L.zip (V.toList p) [0..]) $ \(pomodoro, docId) -> do
+      reply <- indexDocument (es ^. esIndexName) (MappingName "pomodoros") ids
+        (elasticPomodoro $ fmap zonedTimeToUTC pomodoro)
+        (DocId $ T.pack $ show docId)
+      lift $ do
+        unless (isSuccess reply)
+          $ print reply
+        when (docId `mod` 100 == 0)
+          $ P.putStrLn $ "Uploaded " <> show docId <> " documents"
+
 burnCli :: Args -> IO ()
 burnCli = \case
   Server h -> runBurnServer h
   Client c -> runBurnClient c
   Statistics s -> runBurnStats s
+  Elastic es -> runElastic es

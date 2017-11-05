@@ -20,11 +20,13 @@ library
   ghc-options: -Wall
   exposed-modules: Burn.Cli
   build-depends: base >= 4.6 && <= 5
+               , bloodhound
                , burn
                , data-default
                , formatting
                , http-client
                , lens
+               , mtl
                , servant >= 0.9.1.1
                , servant-client >= 0.9.1.1
                , servant-server

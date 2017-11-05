@@ -1,6 +1,7 @@
 module Burn.Optparse.Args where
 
 import Burn.Optparse.Client
+import Burn.Optparse.Elastic
 import Burn.Optparse.Server
 import Burn.Optparse.Statistics
 import Control.Lens
@@ -10,6 +11,7 @@ import Options.Applicative
 data Args
   = Server ServerArgs
   | Client ClientArgs
+  | Elastic ElasticArgs
   | Statistics StatArgs
 
 makePrisms ''Args
@@ -18,13 +20,15 @@ argsParser :: Parser Args
 argsParser = helper <*> go
   where
     go = (Server <$> subparser server) <|> (Client <$> subparser client)
-      <|> (Statistics <$> subparser stat)
+      <|> (Elastic <$> subparser elastic) <|> (Statistics <$> subparser stat)
     server = command "server" $ info (helper <*> serverArgs)
-      $ progDesc "server options" <> fullDesc
+      $ progDesc "start burn server" <> fullDesc
     client = command "client" $ info (helper <*> clientArgs)
-      $ progDesc "client options" <> fullDesc
+      $ progDesc "send command to server" <> fullDesc
+    elastic = command "elastic" $ info (helper <*> elasticArgs)
+      $ progDesc "upload data to Elastic Search" <> fullDesc
     stat = command "stat" $ info (helper <*> statArgs)
-      $ progDesc "statistics options" <> fullDesc
+      $ progDesc "run statistics query" <> fullDesc
 
 argsParserInfo :: ParserInfo Args
 argsParserInfo = info argsParser
