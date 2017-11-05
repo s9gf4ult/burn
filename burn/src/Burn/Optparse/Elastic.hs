@@ -10,13 +10,12 @@ import Data.List as L
 import Data.Monoid
 import Data.Text as T
 import Data.Time
-import Data.Time.Clock.POSIX
 import Database.V5.Bloodhound.Types
 import Options.Applicative
 import Text.Inflections
 
 data ElasticPomodoro = ElasticPomodoro
-  { _epTimestamp :: Int64
+  { _epTimestamp :: String
   , _epTags      :: [Text]
   , _epDuration  :: Int64
   }
@@ -28,7 +27,7 @@ deriveJSON
 
 elasticPomodoro :: PomodoroData UTCTime -> ElasticPomodoro
 elasticPomodoro p = ElasticPomodoro
-  { _epTimestamp = round $ (p ^. pdStarted . to utcTimeToPOSIXSeconds) * 1e3
+  { _epTimestamp = p ^. pdStarted . to (formatTime defaultTimeLocale "%FT%T")
   , _epTags      = p ^. pdTags . _Tags
   , _epDuration  = p ^. pdLen . to round
   }
