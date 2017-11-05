@@ -27,6 +27,7 @@ import Formatting
 import Formatting.Time
 import Network.HTTP.Client
 import Network.Wai.Handler.Warp hiding (Settings)
+import Prelude as P
 import Servant.Client
 import Servant.Server
 
@@ -101,7 +102,11 @@ runElastic es = do
       reply <- indexDocument (es ^. esIndexName) (MappingName "pomodoros") ids
         (elasticPomodoro $ fmap zonedTimeToUTC pomodoro)
         (DocId $ T.pack $ show docId)
-      lift $ print reply
+      lift $ do
+        unless (isSuccess reply)
+          $ print reply
+        when (docId `mod` 100 == 0)
+          $ P.putStrLn $ "Uploaded " <> show docId <> " documents"
 
 burnCli :: Args -> IO ()
 burnCli = \case
