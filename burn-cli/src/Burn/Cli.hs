@@ -100,7 +100,7 @@ runElastic es = do
 
     for_ (L.zip (V.toList p) [0..]) $ \(pomodoro, docId) -> do
       reply <- indexDocument (es ^. esIndexName) (MappingName "pomodoros") ids
-        (elasticPomodoro $ fmap zonedTimeToUTC pomodoro)
+        (elasticPomodoro pomodoro)
         (DocId $ T.pack $ show docId)
       lift $ do
         unless (isSuccess reply)

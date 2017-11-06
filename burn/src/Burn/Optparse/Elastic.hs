@@ -16,6 +16,8 @@ import Text.Inflections
 
 data ElasticPomodoro = ElasticPomodoro
   { _epTimestamp :: String
+  , _epWeekday   :: String
+  , _epHourOfDay :: Double
   , _epTags      :: [Text]
   , _epDuration  :: Int64
   }
@@ -25,12 +27,18 @@ deriveJSON
   { fieldLabelModifier = toUnderscore . L.drop 3 }
   ''ElasticPomodoro
 
-elasticPomodoro :: PomodoroData UTCTime -> ElasticPomodoro
+elasticPomodoro :: PomodoroData ZonedTime -> ElasticPomodoro
 elasticPomodoro p = ElasticPomodoro
-  { _epTimestamp = p ^. pdStarted . to (formatTime defaultTimeLocale "%FT%T")
+  { _epTimestamp = formatTime defaultTimeLocale "%FT%T" utc
+  , _epWeekday   = formatTime defaultTimeLocale "%u" zoned
+  , _epHourOfDay = hod
   , _epTags      = p ^. pdTags . _Tags
   , _epDuration  = p ^. pdLen . to round
   }
+  where
+    utc = zonedTimeToUTC zoned
+    zoned = p ^. pdStarted
+    hod = (realToFrac $ timeOfDayToTime $ localTimeOfDay $ zonedTimeToLocalTime zoned) / 3600
 
 data ElasticArgs = ElasticArgs
   { _esDataFile      :: FilePath
