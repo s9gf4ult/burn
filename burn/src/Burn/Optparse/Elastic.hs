@@ -1,6 +1,7 @@
 module Burn.Optparse.Elastic where
 
 import Burn.Optparse.Settings
+import Burn.Statistics.Functions
 import Burn.Types
 import Control.Lens
 import Data.Aeson
@@ -27,10 +28,14 @@ deriveJSON
   { fieldLabelModifier = toUnderscore . L.drop 3 }
   ''ElasticPomodoro
 
-elasticPomodoro :: PomodoroData ZonedTime -> ElasticPomodoro
-elasticPomodoro p = ElasticPomodoro
+elasticPomodoro
+  :: TimeOfDay
+  -- ^ Day end to calculate week day correctly
+  -> PomodoroData ZonedTime
+  -> ElasticPomodoro
+elasticPomodoro eod p = ElasticPomodoro
   { _epTimestamp = formatTime defaultTimeLocale "%FT%T" utc
-  , _epWeekday   = formatTime defaultTimeLocale "%u" zoned
+  , _epWeekday   = formatTime defaultTimeLocale "%u" day
   , _epHourOfDay = hod
   , _epTags      = p ^. pdTags . _Tags
   , _epDuration  = p ^. pdLen . to round
@@ -38,12 +43,14 @@ elasticPomodoro p = ElasticPomodoro
   where
     utc = zonedTimeToUTC zoned
     zoned = p ^. pdStarted
+    day = timeDay eod zoned
     hod = (realToFrac $ timeOfDayToTime $ localTimeOfDay $ zonedTimeToLocalTime zoned) / 3600
 
 data ElasticArgs = ElasticArgs
   { _esDataFile      :: FilePath
   , _esElasticServer :: Server
   , _esIndexName     :: IndexName
+  , _esDayEnd        :: TimeOfDay
   } deriving (Eq, Show)
 
 makeLenses ''ElasticArgs
@@ -53,6 +60,7 @@ elasticArgs = ElasticArgs
   <$> pomodorosFile
   <*> elasticServer
   <*> elasticIndex
+  <*> dayEnd
 
 elasticServer :: Parser Server
 elasticServer = (Server . T.pack) <$> strOption mods
