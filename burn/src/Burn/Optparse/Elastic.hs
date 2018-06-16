@@ -16,11 +16,13 @@ import Options.Applicative
 import Text.Inflections
 
 data ElasticPomodoro = ElasticPomodoro
-  { _epTimestamp :: String
-  , _epWeekday   :: String
-  , _epHourOfDay :: Double
-  , _epTags      :: [Text]
-  , _epDuration  :: Int64
+  { _epTimestamp     :: String
+  , _epRealDay       :: String
+  , _epWeekday       :: String
+  , _epHourOfDay     :: Double
+  , _epTags          :: [Text]
+  , _epDuration      :: Int64
+  , _epDurationHours :: Double
   }
 
 deriveJSON
@@ -34,13 +36,16 @@ elasticPomodoro
   -> PomodoroData ZonedTime
   -> ElasticPomodoro
 elasticPomodoro eod p = ElasticPomodoro
-  { _epTimestamp = formatTime defaultTimeLocale "%FT%T" utc
-  , _epWeekday   = formatTime defaultTimeLocale "%u" day
-  , _epHourOfDay = hod
-  , _epTags      = p ^. pdTags . _Tags
-  , _epDuration  = p ^. pdLen . to round
+  { _epTimestamp     = formatTime defaultTimeLocale "%FT%T" utc
+  , _epRealDay       = formatTime defaultTimeLocale "%F" day
+  , _epWeekday       = formatTime defaultTimeLocale "%u" day
+  , _epHourOfDay     = hod
+  , _epTags          = p ^. pdTags . _Tags
+  , _epDuration      = duration
+  , _epDurationHours = realToFrac duration * 3600
   }
   where
+    duration = p ^. pdLen . to round
     utc = zonedTimeToUTC zoned
     zoned = p ^. pdStarted
     day = timeDay eod zoned
