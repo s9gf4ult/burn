@@ -13,3 +13,5 @@ extra-deps:
   - servant-client-0.9.1.1
   - servant-server-0.9.1.1
 resolver: lts-6.27
+nix:
+  packages: [zlib]
