@@ -12,6 +12,7 @@ extra-deps:
   - servant-0.9.1.1
   - servant-client-0.9.1.1
   - servant-server-0.9.1.1
-resolver: lts-6.27
+resolver: lts-6.35
 nix:
-  packages: [zlib]
+  packages: [pkgconfig, zlib, cairo, glib, pango, gnome3.gtk3]
+  pure: true
