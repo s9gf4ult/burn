@@ -26,7 +26,7 @@ data PKey val where
   -- ^ Considering real day end
   PWeek      :: PKey Week
   PWeekDay   :: PKey Int
-    -- ^ 1..7 for Monday..Sunday
+  -- ^ 1..7 for Monday..Sunday
 
 deriveGEq ''PKey
 deriveGCompare ''PKey

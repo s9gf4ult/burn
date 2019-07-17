@@ -19,6 +19,8 @@ mkDerivation {
   testHaskellDepends = [
     base data-default lens mtl tasty tasty-hunit time transformers-base
   ];
+  doHaddock = false;
+  doCheck = false;
   homepage = "https://github.com/githubuser/burn#readme";
   description = "Simple project template from stack";
   license = stdenv.lib.licenses.bsd3;
