@@ -2,7 +2,7 @@ module Burn.Types where
 
 import Control.Lens
 import Data.Aeson
-import Data.Aeson.TH
+import Data.Aeson.TH as J
 import Data.Csv
 import Data.Default
 import Data.Text as T
@@ -16,7 +16,7 @@ data Notification
 
 makePrisms ''Notification
 deriveJSON
-  defaultOptions
+  J.defaultOptions
   ''Notification
 
 newtype Tags = Tags [Text]
@@ -64,7 +64,7 @@ data PomodoroData date = PomodoroData
   } deriving (Eq, Ord, Show, Generic, Functor, Foldable, Traversable)
 
 makeLenses ''PomodoroData
-deriveJSON defaultOptions ''PomodoroData
+deriveJSON J.defaultOptions ''PomodoroData
 instance (FromField a) => FromRecord (PomodoroData a)
 instance (ToField a) => ToRecord (PomodoroData a)
 
@@ -75,7 +75,7 @@ data Counting = Counting
 
 makeLenses ''Counting
 deriveJSON
-  defaultOptions
+  J.defaultOptions
   ''Counting
 
 data Burn
@@ -92,7 +92,7 @@ data Burn
 makePrisms ''Burn
 makeLenses ''Burn
 deriveJSON
-  defaultOptions
+  J.defaultOptions
   ''Burn
 
 instance Default Burn where
@@ -108,7 +108,7 @@ data ServerState = ServerState
 
 makeLenses ''ServerState
 deriveJSON
-  defaultOptions
+  J.defaultOptions
   ''ServerState
 
 mkServerState

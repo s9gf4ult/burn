@@ -5,7 +5,6 @@ import Burn.Optparse.Elastic
 import Burn.Optparse.Server
 import Burn.Optparse.Statistics
 import Control.Lens
-import Data.Monoid
 import Options.Applicative
 
 data Args

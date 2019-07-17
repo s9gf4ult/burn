@@ -2,6 +2,7 @@ module Burn.Optparse.Elastic where
 
 import Burn.Optparse.Settings
 import Burn.Statistics.Functions
+import Burn.TH
 import Burn.Types
 import Control.Lens
 import Data.Aeson
@@ -13,7 +14,6 @@ import Data.Text as T
 import Data.Time
 import Database.V5.Bloodhound.Types
 import Options.Applicative
-import Text.Inflections
 
 data ElasticPomodoro = ElasticPomodoro
   { _epTimestamp     :: String
@@ -27,7 +27,7 @@ data ElasticPomodoro = ElasticPomodoro
 
 deriveJSON
   defaultOptions
-  { fieldLabelModifier = toUnderscore . L.drop 3 }
+  { fieldLabelModifier = toUnderscore' . L.drop 3 }
   ''ElasticPomodoro
 
 elasticPomodoro

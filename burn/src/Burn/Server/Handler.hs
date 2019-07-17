@@ -7,7 +7,6 @@ import Burn.Storage
 import Control.Concurrent.STM
 import Control.Lens
 import Control.Monad.Base
-import Control.Monad.Except
 import Data.Default
 import Data.Time
 import Data.Vector as V
@@ -53,7 +52,7 @@ handlers p
 handleMessage
   :: Event
   -> Payload
-  -> ExceptT ServantErr IO ServerState
+  -> Handler ServerState
 handleMessage evt p = liftBase $ do
   now <- getCurrentTime
   tz <- getCurrentTimeZone

@@ -1,10 +1,9 @@
 { mkDerivation, aeson, base, bloodhound, bytestring, cassava
 , containers, data-default, dependent-map, dependent-sum
 , dependent-sum-template, directory, dlist, foldl, http-client
-, inflections, lens, mtl, optparse-applicative, peridot
-, profunctors, servant, servant-client, servant-server, statistics
-, stdenv, stm, tasty, tasty-hunit, text, time, transformers-base
-, vector, warp
+, inflections, lens, mtl, optparse-applicative, profunctors
+, servant, servant-client, servant-server, statistics, stdenv, stm
+, tasty, tasty-hunit, text, time, transformers-base, vector, warp
 }:
 mkDerivation {
   pname = "burn";
@@ -13,7 +12,7 @@ mkDerivation {
   libraryHaskellDepends = [
     aeson base bloodhound bytestring cassava containers data-default
     dependent-map dependent-sum dependent-sum-template directory dlist
-    foldl http-client inflections lens mtl optparse-applicative peridot
+    foldl http-client inflections lens mtl optparse-applicative
     profunctors servant servant-client servant-server statistics stm
     text time transformers-base vector warp
   ];
