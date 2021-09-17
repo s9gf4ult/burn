@@ -1,5 +1,5 @@
 { mkDerivation, base, containers, dependent-map, dependent-sum
-, dependent-sum-template, dlist, foldl, HUnit, profunctors, stdenv
+, dependent-sum-template, dlist, foldl, HUnit, lib, profunctors
 , tasty, tasty-hunit, time, transformers, vector, vinyl
 }:
 mkDerivation {
@@ -16,5 +16,5 @@ mkDerivation {
   ];
   homepage = "https://github.com/githubuser/peridot#readme";
   description = "Kinda framework for typesafe statistical reports";
-  license = stdenv.lib.licenses.bsd3;
+  license = lib.licenses.bsd3;
 }

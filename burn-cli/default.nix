@@ -1,7 +1,6 @@
 { mkDerivation, base, bloodhound, burn, data-default, formatting
-, http-client, lens, mtl, optparse-applicative, servant
-, servant-client, servant-server, stdenv, stm, text, time, vector
-, warp
+, http-client, lens, lib, mtl, optparse-applicative, servant
+, servant-client, servant-server, stm, text, time, vector, warp
 }:
 mkDerivation {
   pname = "burn-cli";
@@ -18,5 +17,5 @@ mkDerivation {
   doCheck = false;
   homepage = "https://github.com/githubuser/burn-cli#readme";
   description = "Simple project template from stack";
-  license = stdenv.lib.licenses.bsd3;
+  license = lib.licenses.bsd3;
 }
