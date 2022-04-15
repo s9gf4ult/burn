@@ -24,7 +24,7 @@ import Graphics.UI.Gtk.General.Enums
 import Servant.Client
 import System.Process
 
--- | Hooks to run when on some events
+-- | Hooks to run on some events
 data Controller = Controller
   { _cStartPomodoro :: !(IO ())
   , _cStartPause    :: !(IO ())
