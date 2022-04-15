@@ -14,8 +14,10 @@ extra-deps:
   - glib-0.13.7.0
   - gtk2hs-buildtools-0.13.5.0
   - pango-0.13.6.0
+  - hsc2hs-0.68.8
 
 resolver: lts-13.28
 nix:
-  packages: [pkgconfig, zlib, cairo, glib, pango, gtk3]
+  # packages: [pkgconfig, zlib, cairo, glib, pango, gtk3]
   pure: true
+  shell-file: shell.nix
