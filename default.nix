@@ -1,5 +1,3 @@
-# { nixpkgs }:
-
 let
   # Read in the Niv sources
   sources = import ./nix/sources.nix {};

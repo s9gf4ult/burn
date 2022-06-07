@@ -15,8 +15,13 @@ extra-deps:
   - gtk2hs-buildtools-0.13.5.0
   - pango-0.13.6.0
   - hsc2hs-0.68.8
+  - Cabal-3.6.3.0
+  - parsec-3.1.15.0
+  - semigroups-0.18.5
+  - text-1.2.5.0
+  - time-1.8.0.4
 
-resolver: lts-13.28
+resolver: lts-18.18
 nix:
   # packages: [pkgconfig, zlib, cairo, glib, pango, gtk3]
   pure: true
