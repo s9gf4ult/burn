@@ -5,23 +5,22 @@ packages:
   - burn-gtk
   - peridot
 extra-deps:
-  - bloodhound-0.16.0.0
-  - containers-0.5.11.0
-  - binary-0.8.7.0
-  - gtk3-0.15.1
-  - cairo-0.13.6.0
-  - gio-0.13.6.0
-  - glib-0.13.7.0
-  - gtk2hs-buildtools-0.13.5.0
-  - pango-0.13.6.0
-  - hsc2hs-0.68.8
-  - Cabal-3.6.3.0
-  - parsec-3.1.15.0
-  - semigroups-0.18.5
-  - text-1.2.5.0
-  - time-1.8.0.4
+  - bloodhound-0.20.0.2
+#   - containers-0.5.11.0
+#   - binary-0.8.7.0
+  - gtk3-0.15.7
+  - cairo-0.13.8.2
+  - gio-0.13.8.2
+  - glib-0.13.8.2
+#   - gtk2hs-buildtools-0.13.5.0
+  - pango-0.13.8.2
+#   - hsc2hs-0.68.8
+#   - Cabal-3.6.3.0
+#   - parsec-3.1.15.0
+#   - semigroups-0.18.5
+#   - text-1.2.5.0
 
-resolver: lts-18.18
+resolver: lts-19.10
 nix:
   # packages: [pkgconfig, zlib, cairo, glib, pango, gtk3]
   pure: true
