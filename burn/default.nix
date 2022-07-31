@@ -1,4 +1,4 @@
-{ mkDerivation, aeson, base, bloodhound, bytestring, cassava
+{ mkDerivation, aeson, base, bytestring, cassava
 , containers, data-default, dependent-map, dependent-sum
 , dependent-sum-template, directory, dlist, foldl, http-client
 , inflections, lens, lib, mtl, optparse-applicative, profunctors
@@ -10,7 +10,7 @@ mkDerivation {
   version = "0.0.1";
   src = ./.;
   libraryHaskellDepends = [
-    aeson base bloodhound bytestring cassava containers data-default
+    aeson base bytestring cassava containers data-default
     dependent-map dependent-sum dependent-sum-template directory dlist
     foldl http-client inflections lens mtl optparse-applicative
     profunctors servant servant-client servant-server statistics stm

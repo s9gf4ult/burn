@@ -3,7 +3,7 @@ packages:
   - burn
   - burn-cli
   - burn-gtk
-  - peridot
+  # - peridot
 extra-deps:
   - aeson-2.1.0.0
   - cassava-0.5.2.0

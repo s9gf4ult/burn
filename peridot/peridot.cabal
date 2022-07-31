@@ -62,6 +62,7 @@ library
                      , dlist
                      , foldl >= 1.2.3
                      , profunctors
+                     , some
                      , time
                      , transformers
                      , vector

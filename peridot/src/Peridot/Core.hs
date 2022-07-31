@@ -3,7 +3,9 @@ module Peridot.Core where
 import Control.Foldl as FL
 import Data.DList as DL
 import Data.Dependent.Map as DM
+import Data.Dependent.Sum
 import Data.Functor.Identity
+import Data.GADT.Compare
 import Data.Map as M
 
 -- | The record is just map of some arbitrary values, all values are

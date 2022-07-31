@@ -12,7 +12,6 @@ import Data.List as L
 import Data.Monoid
 import Data.Text as T
 import Data.Time
-import Database.V5.Bloodhound.Types
 import Options.Applicative
 
 data ElasticPomodoro = ElasticPomodoro
@@ -51,32 +50,32 @@ elasticPomodoro eod p = ElasticPomodoro
     day = timeDay eod zoned
     hod = (realToFrac $ timeOfDayToTime $ localTimeOfDay $ zonedTimeToLocalTime zoned) / 3600
 
-data ElasticArgs = ElasticArgs
-  { _esDataFile      :: FilePath
-  , _esElasticServer :: Server
-  , _esIndexName     :: IndexName
-  , _esDayEnd        :: TimeOfDay
-  } deriving (Eq, Show)
+-- data ElasticArgs = ElasticArgs
+--   { _esDataFile      :: FilePath
+--   , _esElasticServer :: Server
+--   , _esIndexName     :: IndexName
+--   , _esDayEnd        :: TimeOfDay
+--   } deriving (Eq, Show)
 
-makeLenses ''ElasticArgs
+-- makeLenses ''ElasticArgs
 
-elasticArgs :: Parser ElasticArgs
-elasticArgs = ElasticArgs
-  <$> pomodorosFile
-  <*> elasticServer
-  <*> elasticIndex
-  <*> dayEnd
+-- elasticArgs :: Parser ElasticArgs
+-- elasticArgs = ElasticArgs
+--   <$> pomodorosFile
+--   <*> elasticServer
+--   <*> elasticIndex
+--   <*> dayEnd
 
-elasticServer :: Parser Server
-elasticServer = (Server . T.pack) <$> strOption mods
-  where
-    mods = long "elastic-server" <> short 'e'
-      <> help "Elastic Search server address, default is http://localhost:9200"
-      <> value "http://localhost:9200"
+-- elasticServer :: Parser Server
+-- elasticServer = (Server . T.pack) <$> strOption mods
+--   where
+--     mods = long "elastic-server" <> short 'e'
+--       <> help "Elastic Search server address, default is http://localhost:9200"
+--       <> value "http://localhost:9200"
 
-elasticIndex :: Parser IndexName
-elasticIndex = (IndexName . T.pack) <$> strOption mods
-  where
-    mods = long "index" <> short 'i'
-      <> help "Index name for Elastic Search"
-      <> value "burn"
+-- elasticIndex :: Parser IndexName
+-- elasticIndex = (IndexName . T.pack) <$> strOption mods
+--   where
+--     mods = long "index" <> short 'i'
+--       <> help "Index name for Elastic Search"
+--       <> value "burn"

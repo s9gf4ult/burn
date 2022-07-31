@@ -3,6 +3,7 @@ module Peridot.Grouping.Key where
 import Data.Dependent.Sum
 import Data.Functor.Classes
 import Data.GADT.Compare
+import Data.Type.Equality
 import Peridot.Auxiliary
 import Peridot.Diffable
 

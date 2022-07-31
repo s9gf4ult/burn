@@ -1,4 +1,4 @@
-{ mkDerivation, base, bloodhound, burn, data-default, formatting
+{ mkDerivation, base, burn, data-default, formatting
 , http-client, lens, lib, mtl, optparse-applicative, servant
 , servant-client, servant-server, stm, text, time, vector, warp
 }:
@@ -9,7 +9,7 @@ mkDerivation {
   isLibrary = true;
   isExecutable = true;
   libraryHaskellDepends = [
-    base bloodhound burn data-default formatting http-client lens mtl
+    base burn data-default formatting http-client lens mtl
     servant servant-client servant-server stm text time vector warp
   ];
   executableHaskellDepends = [ base burn optparse-applicative ];

@@ -41,7 +41,6 @@ library
                  , Burn.Types
   build-depends: base >= 4.6 && <= 5
                , aeson
-               , bloodhound
                , bytestring
                , cassava
                , containers
