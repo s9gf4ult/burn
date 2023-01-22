@@ -1,10 +1,13 @@
-{ haskellLib }: self: super:
+{ haskellLib, pkgs }: self: super:
 
 with haskellLib; {
-  rndvid = super.callPackage ../../rndvid {} ;
-  gtk3 = super.callPackage ./gtk3.nix ;
-  cairo = super.callPackage ./cairo.nix ;
-  gio = super.callPackage ./gio.nix ;
-  glib = super.callPackage ./glib.nix ;
-  pango = super.callPackage ./pango.nix ;
+  burn = super.callPackage ../../burn;
+  burn-cli = super.callPackage ../../burn-cli;
+  burn-gtk = super.callPackage ../../burn-gtk;
+
+  gtk3 = super.callPackage ./gtk3.nix { inherit (pkgs) gtk3; };
+  cairo = super.callPackage ./cairo.nix { inherit (pkgs) cairo; };
+  gio = super.callPackage ./gio.nix { inherit (pkgs) system-glib; };
+  glib = super.callPackage ./glib.nix { inherit (pkgs) glib; };
+  pango = super.callPackage ./pango.nix { inherit (pkgs) pango; };
 }

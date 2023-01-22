@@ -15,9 +15,8 @@ mkDerivation {
     transformers-base
   ];
   executableHaskellDepends = [ base ];
-  doHaddock = false;
-  doCheck = false;
   homepage = "https://github.com/githubuser/burn-gtk#readme";
   description = "Simple project template from stack";
   license = lib.licenses.bsd3;
+  mainProgram = "burn-gtk";
 }
