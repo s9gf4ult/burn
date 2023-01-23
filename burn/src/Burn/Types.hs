@@ -86,11 +86,11 @@ instance Default Burn where
   def = Waiting
 
 data ServerState = ServerState
-  { tags          :: ![Text]
+  { tags           :: ![Text]
   , todayPomodoros :: ![PomodoroData UTCTime]
     -- ^ List of today's counted pomodoros
-  , burn          :: !Burn
-  , lastMsg       :: !UTCTime
+  , burn           :: !Burn
+  , lastMsg        :: !UTCTime
   } deriving (Eq, Ord, Show, Generic, FromJSON, ToJSON)
 
 mkServerState
@@ -104,25 +104,19 @@ data Event
   | StartPomodoro
   | StartPause
   | SetTags [Text]
-  deriving (Show)
-
-makePrisms ''Event
+  deriving (Eq, Ord, Show, Generic)
 
 data Message = Message
-  { _mTime  :: UTCTime
-  , _mEvent :: Event
-  } deriving (Show)
-
-makeLenses ''Message
+  { time  :: UTCTime
+  , event :: Event
+  } deriving (Eq, Ord, Show, Generic)
 
 data Action
   = SavePomodoro (PomodoroData UTCTime)
     -- ^ Command to save pomodoro
   | ResetTimers
     -- ^ Day is end so we must reset timers
-  deriving (Eq, Ord, Show)
-
-makePrisms ''Action
+  deriving (Eq, Ord, Show, Generic)
 
 data Settings = Settings
   { _sPomodoroLen :: !NominalDiffTime

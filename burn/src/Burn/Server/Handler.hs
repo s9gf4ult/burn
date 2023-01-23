@@ -45,7 +45,7 @@ handleMessage evt p = liftBase $ do
     return (settings, res)
   print evt
   pomodors <- (traversed . traversed) utcToLocalZonedTime
-    $ actions ^.. folded . _SavePomodoro
+    $ actions ^.. folded . #_SavePomodoro
   for_ (settings ^. sDataFile) $ \p -> do
     savePomodoros p pomodors
   return newSt

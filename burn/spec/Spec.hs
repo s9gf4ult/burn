@@ -84,7 +84,7 @@ pomodoroLenShould expected = do
 
 pomodoroSaved :: NominalDiffTime -> [AcNot] -> SIO ()
 pomodoroSaved expected a = do
-  let plen = sumOf (folded . _Right . _SavePomodoro . #length) a
+  let plen = sumOf (folded . _Right . #_SavePomodoro . #length) a
   liftBase $ assertEqual "Saved pomodoro length: " expected plen
 
 pomodoroFinished :: [AcNot] -> SIO ()

@@ -46,11 +46,11 @@ splitDaylyActions
 splitDaylyActions s tz prev now actions =
   let
     low = min prev $ fromMaybe prev
-      $ minimumOf (folded . _SavePomodoro . #started) actions
+      $ minimumOf (folded . #_SavePomodoro . #started) actions
   in case timeBetween tz low now (s ^. sDayEnd) of
        Nothing -> actions
        Just de ->
-         let pomodors = (actions ^.. folded . _SavePomodoro) >>= splitPomodoro de
+         let pomodors = (actions ^.. folded . #_SavePomodoro) >>= splitPomodoro de
              f p = p ^. #started >= de
              (a, b) = break f pomodors
          in map SavePomodoro a ++ [ResetTimers] ++ map SavePomodoro b
@@ -90,7 +90,7 @@ processTags
   :: Message
   -> [Text]
   -> [Text]
-processTags msg tags = case msg ^. mEvent of
+processTags msg tags = case msg ^. #event of
   SetTags newTags -> newTags
   _               -> tags
 
