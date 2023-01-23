@@ -23,15 +23,15 @@ process :: Settings -> TimeZone -> Message -> ServerState -> (ServerState, [Acti
 process s tz msg state =
   let
     Message now _ = msg
-    (burn, actions') = processBurn s msg (state ^. sTags) (state ^. sBurn)
-    tags = processTags msg $ state ^. sTags
-    actions  = splitDaylyActions s tz (state ^. sLastMsg) now actions'
-    pomodors = processCounted actions $ state ^. sTodayPomodors
+    (burn, actions') = processBurn s msg (state ^. #tags) (state ^. #burn)
+    tags = processTags msg $ state ^. #tags
+    actions  = splitDaylyActions s tz (state ^. #lastMsg) now actions'
+    pomodors = processCounted actions $ state ^. #todayPomodoros
     newState = ServerState
-      { _sTags          = tags
-      , _sTodayPomodors = pomodors
-      , _sBurn          = burn
-      , _sLastMsg       = now }
+      { tags          = tags
+      , todayPomodoros = pomodors
+      , burn          = burn
+      , lastMsg       = now }
   in (newState, actions)
 
 splitDaylyActions

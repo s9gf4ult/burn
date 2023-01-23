@@ -70,11 +70,11 @@ formatTimeDiff (truncate -> seconds) =
 currentPomodor :: ServerState -> Maybe (PomodoroData UTCTime)
 currentPomodor s =
   let
-    counting = s ^? sBurn . _PomodoroCounting . _2
+    counting = s ^? #burn . _PomodoroCounting . _2
     started  = counting ^? _Just . #started
-    now      = s ^. sLastMsg
+    now      = s ^. #lastMsg
     len      = diffUTCTime now <$> started
-    tags     = Tags $ s ^. sTags
+    tags     = Tags $ s ^. #tags
   in PomodoroData <$> started <*> len <*> pure tags
 
 -- | Remove all packed witdgets and add new grid widget with given text
@@ -120,26 +120,26 @@ byTagTimes pomodors =
 updateView :: View -> Pixbufs -> TVar Model -> ServerState -> IO ()
 updateView v pbs tModel s = do
   let
-    now = s ^. sLastMsg
+    now = s ^. #lastMsg
     formatCounting c =
       let
         passed = formatTimeDiff $ diffUTCTime now $ c ^. #started
         len = formatTimeDiff $ c ^. #length
       in passed <> "/" <> len
-    counterText = case s ^. sBurn of
+    counterText = case s ^. #burn of
       Waiting -> "--:--"
       PomodoroCounting _ c -> "P " <> formatCounting c
       PauseCounting c -> "  " <> formatCounting c
-    allPomodors = (currentPomodor s ^.. _Just) ++ (s ^. sTodayPomodors)
+    allPomodors = (currentPomodor s ^.. _Just) ++ (s ^. #todayPomodoros)
     timeSpent = formatTimeDiff $ sumOf (folded . #length) allPomodors
-    pbuf = case s ^. sBurn of
+    pbuf = case s ^. #burn of
       Waiting             -> pbs ^. pInit
       PomodoroCounting {} -> pbs ^. pPomodoro
       PauseCounting {}    -> pbs ^. pPause
   mNewTags <- atomically $ do
     model <- readTVar tModel
     let
-      newT = s ^. sTags
+      newT = s ^. #tags
       oldT = model ^. mTags . #_Tags
     writeTVar tModel $ model & (mTags . #_Tags) .~ newT
     return $ if S.fromList oldT == S.fromList newT
@@ -165,7 +165,7 @@ newController hp v pbs = do
       case resp of
         Left e -> print e
         Right newSt -> do
-          let now = newSt ^. sLastMsg
+          let now = newSt ^. #lastMsg
           updateView v pbs clientModel newSt
           notifs <- atomically $ do
             oldClient <- readTVar clientState

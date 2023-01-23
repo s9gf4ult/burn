@@ -23,7 +23,7 @@ updateState
      -- ^ State came from server
   -> ClientState
   -> (ClientState, [Notification])
-updateState now server client = case server ^. sBurn of
+updateState now server client = case server ^. #burn of
   Waiting              -> (ClientState False, [])
   PomodoroCounting _ c -> countingState PomodoroFinished c
   PauseCounting c      -> countingState PauseFinished c

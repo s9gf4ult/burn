@@ -74,12 +74,12 @@ isolate action = do
 
 pauseLenShould :: NominalDiffTime -> SIO ()
 pauseLenShould expected = do
-  plen <- preuse $ sState . sBurn . _PauseCounting . #length
+  plen <- preuse $ sState . #burn . _PauseCounting . #length
   liftBase $ assertEqual "Pause should be: " (Just expected) plen
 
 pomodoroLenShould :: NominalDiffTime -> SIO ()
 pomodoroLenShould expected = do
-  pomLen <- preuse $ sState . sBurn . _PomodoroCounting . _2 . #length
+  pomLen <- preuse $ sState . #burn . _PomodoroCounting . _2 . #length
   liftBase $ assertEqual "Pomodoro should be: " (Just expected) pomLen
 
 pomodoroSaved :: NominalDiffTime -> [AcNot] -> SIO ()
@@ -109,7 +109,7 @@ resetTimers acnot = do
 
 todayPomodoros :: NominalDiffTime -> SIO ()
 todayPomodoros psum = do
-  p <- use $ sState . sTodayPomodors
+  p <- use $ sState . #todayPomodoros
   liftBase $ assertEqual "Today pomodoros" psum $ sumOf (folded . #length) p
 
 shortPomodoro :: Assertion
@@ -203,13 +203,13 @@ splitDay = runSIO $ do
   isolate $ do
     emptyActions =<< spend (mm 24) -- minute till day end
     pomodoroSaved (mm 24) =<< send StartPause
-    todayPomodoros (mm 24)
+    Main.todayPomodoros (mm 24)
     resetTimers =<< spend (mm 2) -- minute in tomorrow
-    todayPomodoros 0
+    Main.todayPomodoros 0
   isolate $ do
     resetTimers =<< spend (mm 30) -- 5 minutes in tomorrow
     pomodoroSaved (mm 30) =<< send StartPause
-    todayPomodoros (mm 5)
+    Main.todayPomodoros (mm 5)
 
 main :: IO ()
 main = defaultMain $ testGroup "Test cases"

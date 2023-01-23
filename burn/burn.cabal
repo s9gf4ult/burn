@@ -100,7 +100,8 @@ test-suite spec
   main-is:          Spec.hs
   ghc-options: -Wall -threaded
   default-language: Haskell2010
-  default-extensions: FlexibleContexts
+  default-extensions: DuplicateRecordFields
+                    , FlexibleContexts
                     , NegativeLiterals
                     , OverloadedLabels
                     , OverloadedStrings

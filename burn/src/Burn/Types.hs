@@ -74,7 +74,7 @@ data Burn
   | PauseCounting
     { _bCounting :: Counting
     }
-  deriving (Show)
+  deriving (Eq, Ord, Show)
 
 makePrisms ''Burn
 makeLenses ''Burn
@@ -86,17 +86,12 @@ instance Default Burn where
   def = Waiting
 
 data ServerState = ServerState
-  { _sTags          :: ![Text]
-  , _sTodayPomodors :: ![PomodoroData UTCTime]
+  { tags          :: ![Text]
+  , todayPomodoros :: ![PomodoroData UTCTime]
     -- ^ List of today's counted pomodoros
-  , _sBurn          :: !Burn
-  , _sLastMsg       :: !UTCTime
-  } deriving (Show)
-
-makeLenses ''ServerState
-deriveJSON
-  J.defaultOptions
-  ''ServerState
+  , burn          :: !Burn
+  , lastMsg       :: !UTCTime
+  } deriving (Eq, Ord, Show, Generic, FromJSON, ToJSON)
 
 mkServerState
   :: UTCTime
