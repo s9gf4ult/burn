@@ -40,9 +40,9 @@ initPayload settings = do
   zt <- getZonedTime
   let
     now = zonedTimeToUTC zt
-    eod = settings ^. sDayEnd
+    eod = settings ^. #dayEnd
     day = timeDay eod zt
-  pomodors <- case settings ^. sDataFile of
+  pomodors <- case settings ^. #dataFile of
     Just p -> loadPomodors p
     Nothing -> pure mempty
   let
@@ -87,10 +87,10 @@ runBurnClient ca = case ca ^. caCommands of
 
 runBurnStats :: StatArgs -> IO ()
 runBurnStats (StatArgs s q) = do
-  p <- case s ^. sDataFile of
+  p <- case s ^. #dataFile of
     Just f -> loadPomodors f
     Nothing -> pure mempty
-  printStatsQuery (s ^. sDayEnd) q p
+  printStatsQuery (s ^. #dayEnd) q p
 
 -- runElastic :: ElasticArgs -> IO ()
 -- runElastic es = do

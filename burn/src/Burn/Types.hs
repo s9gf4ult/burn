@@ -119,20 +119,18 @@ data Action
   deriving (Eq, Ord, Show, Generic)
 
 data Settings = Settings
-  { _sPomodoroLen :: !NominalDiffTime
-  , _sPauseLen    :: !NominalDiffTime
-  , _sLongPause   :: !NominalDiffTime
-  , _sDayEnd      :: !TimeOfDay
-  , _sDataFile    :: !(Maybe FilePath)
-  } deriving (Eq, Ord, Show)
-
-makeLenses ''Settings
+  { pomodoroLength :: !NominalDiffTime
+  , pauseLength    :: !NominalDiffTime
+  , longPause      :: !NominalDiffTime
+  , dayEnd         :: !TimeOfDay
+  , dataFile       :: !(Maybe FilePath)
+  } deriving (Eq, Ord, Show, Generic)
 
 instance Default Settings where
   def = Settings
-    { _sPomodoroLen = 25 * 60
-    , _sPauseLen    = 5 * 60
-    , _sLongPause   = 15 * 60
-    , _sDayEnd      = TimeOfDay 5 0 0
-    , _sDataFile    = Nothing
+    { pomodoroLength = 25 * 60
+    , pauseLength    = 5 * 60
+    , longPause      = 15 * 60
+    , dayEnd         = TimeOfDay 5 0 0
+    , dataFile       = Nothing
     }

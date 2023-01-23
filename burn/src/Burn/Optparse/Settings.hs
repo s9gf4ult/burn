@@ -33,11 +33,11 @@ pomodorosFile = optional $ strOption filePath
     filePath = long "file" <> short 'f'
       <> help "CSV file with pomodors to store"
 
-dayEnd :: Parser TimeOfDay
-dayEnd = option todReader eod
+parseDayEnd :: Parser TimeOfDay
+parseDayEnd = option todReader eod
   where
     eod = long "end-of-day" <> help "Time when your day realy ends"
-      <> value (def ^. sDayEnd)
+      <> value ((def :: Settings) ^. #dayEnd)
 
 todReader :: ReadM TimeOfDay
 todReader = str >>= parseTimeM True defaultTimeLocale "%R"
@@ -47,15 +47,17 @@ settings = Settings
   <$> option timeReader pomLen
   <*> option timeReader pauseLen
   <*> option timeReader longPause
-  <*> dayEnd
+  <*> parseDayEnd
   <*> pomodorosFile
   where
     timeReader = do
       mins <- auto
       pure $ secondsToNominalDiffTime (mins * 60)
     pomLen = long "pomodoro" <> help "Length of pomodoro in minutes"
-      <> value (def ^. sPomodoroLen)
+      <> value (defSettings ^. #pomodoroLength)
     pauseLen = long "pause" <> help "Length of pause in minutes"
-      <> value (def ^. sPauseLen)
+      <> value (defSettings ^. #pauseLength)
     longPause = long "long" <> help "Maximum length of calculated pause in minutes"
-      <> value (def ^. sLongPause)
+      <> value (defSettings ^. #longPause)
+    defSettings :: Settings
+    defSettings = def

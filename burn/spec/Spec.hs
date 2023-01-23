@@ -198,7 +198,7 @@ splitDay :: Assertion
 splitDay = runSIO $ do
   sNow .= UTCTime (fromGregorian 2020 10 10)
     (secondsToDiffTime ((24 * 3600) - (60 * 25))) -- 25 min till day end
-  sSettings . sDayEnd .= TimeOfDay 0 0 0 -- day end match with day end
+  sSettings . #dayEnd .= TimeOfDay 0 0 0 -- day end match with day end
   send' StartPomodoro
   isolate $ do
     emptyActions =<< spend (mm 24) -- minute till day end

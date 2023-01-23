@@ -47,7 +47,7 @@ splitDaylyActions s tz prev now actions =
   let
     low = min prev $ fromMaybe prev
       $ minimumOf (folded . #_SavePomodoro . #started) actions
-  in case timeBetween tz low now (s ^. sDayEnd) of
+  in case timeBetween tz low now (s ^. #dayEnd) of
        Nothing -> actions
        Just de ->
          let pomodors = (actions ^.. folded . #_SavePomodoro) >>= splitPomodoro de
@@ -113,17 +113,17 @@ processBurn s (Message now evt) tags burn = case evt of
       let
         res = PomodoroCounting now $ Counting
           { started = now
-          , length = s ^. sPomodoroLen
+          , length = s ^. #pomodoroLength
           }
       in (res, [])
     b@(PomodoroCounting {}) -> (b, [])
     PauseCounting c ->
       let
         passed = diffUTCTime now $ c ^. #started
-        stdPom = s ^. sPomodoroLen
-        stdPause = s ^. sPauseLen
+        stdPom = s ^. #pomodoroLength
+        stdPause = s ^. #pauseLength
         -- (passed + (5 - #length)) / 5 = x / 25 => x = 25 * (passed + (5 - #length)) / 5
-        pomLen = min (s ^. sPomodoroLen)
+        pomLen = min (s ^. #pomodoroLength)
           $ stdPom * (passed + (stdPause - c ^. #length)) / stdPause
         newC = Counting
           { length      = pomLen
@@ -135,16 +135,16 @@ processBurn s (Message now evt) tags burn = case evt of
       let
         res = PauseCounting $ Counting
           { started = now
-          , length = s ^. sPauseLen
+          , length = s ^. #pauseLength
           }
       in (res, [])
     PomodoroCounting lastSaved' c ->
       let
         passed = diffUTCTime now $ c ^. #started
-        stdPom = s ^. sPomodoroLen
-        stdPause = s ^. sPauseLen
+        stdPom = s ^. #pomodoroLength
+        stdPause = s ^. #pauseLength
         -- (passed + (25 - #length)) / 25 = x / 5 => x = 5 * (passed + (25 - #length)) / 25
-        pauseLen = min (s ^. sLongPause)
+        pauseLen = min (s ^. #longPause)
           $ stdPause * (passed + (stdPom - c ^. #length)) / stdPom
         newC = Counting
           { started  = now
