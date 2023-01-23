@@ -51,11 +51,11 @@ settings = Settings
   <*> pomodorosFile
   where
     timeReader = do
-      tod <- todReader
-      return $ realToFrac $ timeOfDayToTime tod
-    pomLen = long "pomodoro" <> help "Length of pomodoro"
+      mins <- auto
+      pure $ secondsToNominalDiffTime (mins * 60)
+    pomLen = long "pomodoro" <> help "Length of pomodoro in minutes"
       <> value (def ^. sPomodoroLen)
-    pauseLen = long "pause" <> help "Length of pause"
+    pauseLen = long "pause" <> help "Length of pause in minutes"
       <> value (def ^. sPauseLen)
-    longPause = long "long" <> help "Maximum length of calculated pause"
+    longPause = long "long" <> help "Maximum length of calculated pause in minutes"
       <> value (def ^. sLongPause)

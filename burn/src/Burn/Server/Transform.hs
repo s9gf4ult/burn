@@ -46,25 +46,25 @@ splitDaylyActions
 splitDaylyActions s tz prev now actions =
   let
     low = min prev $ fromMaybe prev
-      $ minimumOf (folded . _SavePomodoro . pdStarted) actions
+      $ minimumOf (folded . _SavePomodoro . #pdStarted) actions
   in case timeBetween tz low now (s ^. sDayEnd) of
        Nothing -> actions
        Just de ->
          let pomodors = (actions ^.. folded . _SavePomodoro) >>= splitPomodoro de
-             f p = p ^. pdStarted >= de
+             f p = p ^. #pdStarted >= de
              (a, b) = break f pomodors
          in map SavePomodoro a ++ [ResetTimers] ++ map SavePomodoro b
 
 splitPomodoro :: UTCTime -> PomodoroData UTCTime -> [PomodoroData UTCTime]
 splitPomodoro de pd =
   let
-    pstart = pd ^. pdStarted
-    pend = addUTCTime (pd ^. pdLen) pstart
+    pstart = pd ^. #pdStarted
+    pend = addUTCTime (pd ^. #pdLen) pstart
     result = if
       | pstart < de && de < pend ->
         let l1 = diffUTCTime de pstart
             l2 = diffUTCTime pend de
-            tags = pd ^. pdTags
+            tags = pd ^. #pdTags
         in [PomodoroData pstart l1 tags, PomodoroData de l2 tags]
       | otherwise -> [pd]
   in result
@@ -152,9 +152,9 @@ processBurn s (Message now evt) tags burn = case evt of
           }
         lastSaved = max lastSaved' (c ^. cStarted)
         pomodoro = PomodoroData
-          { _pdStarted = lastSaved
-          , _pdLen     = diffUTCTime now $ lastSaved
-          , _pdTags    = Tags tags }
+          { pdStarted = lastSaved
+          , pdLen     = diffUTCTime now $ lastSaved
+          , pdTags    = Tags tags }
       in (PauseCounting newC, [SavePomodoro pomodoro])
     PauseCounting c -> (PauseCounting c, [])
   SetTags newTags -> case burn of
@@ -163,8 +163,8 @@ processBurn s (Message now evt) tags burn = case evt of
         let
           lastSaved = max lastSaved' $ c ^. cStarted
           pomodoro = PomodoroData
-            { _pdStarted = lastSaved
-            , _pdLen = diffUTCTime now lastSaved
-            , _pdTags = Tags tags }
+            { pdStarted = lastSaved
+            , pdLen = diffUTCTime now lastSaved
+            , pdTags = Tags tags }
         in (PomodoroCounting now c, [SavePomodoro pomodoro])
     b -> (b, [])

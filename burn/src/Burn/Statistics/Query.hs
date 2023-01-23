@@ -18,7 +18,7 @@ splitPomodoros
   -> Map Day [PomodoroData ZonedTime]
 splitPomodoros eod
   = M.fromListWith (++)
-  . L.map (views pdStarted (timeDay eod) &&& (:[]))
+  . L.map (views #pdStarted (timeDay eod) &&& (:[]))
 
 
 -- | Execute and print statistics query
@@ -42,5 +42,5 @@ printStatsQuery eod q pd = (error "FIXME: implement stats query")
   --   -- FIXME: implement stats calc
   --   res = flip fmap ranged $ \(day, pom) ->
   --     StatsResult day $ SDSummary $ calculateStats 5
-  --     $ pom ^.. folded . pdLen
+  --     $ pom ^.. folded . #pdLen
   -- return res

@@ -5,6 +5,7 @@ import Burn.Client
 import Burn.Gtk.Model
 import Burn.Gtk.View
 import Burn.Optparse
+import Burn.Types
 import Control.Concurrent
 import Control.Concurrent.STM
 import Control.Lens
@@ -12,6 +13,7 @@ import Control.Monad
 import Control.Monad.Base
 import Data.Default
 import Data.Foldable
+import Data.Generics.Labels ()
 import Data.List as L
 import Data.Map.Strict as M
 import Data.Monoid
@@ -107,11 +109,11 @@ byTagTimes pomodors =
   let
     byTag = M.fromListWith (<>) $ do
       pmd <- pomodors
-      tag <- pmd ^. pdTags . _Tags
+      tag :: Text <- pmd ^. #pdTags . #_Tags
       return (tag, [pmd])
     fmt (tag, p) =
-      (tag, formatTimeDiff $ sumOf (folded . pdLen) p)
-    noTag = fmt ("No tag", pomodors ^.. folded . filtered (views (pdTags . _Tags) (== [])))
+      (tag, formatTimeDiff $ sumOf (folded . #pdLen) p)
+    noTag = fmt ("No tag", L.filter (\a -> a ^. #pdTags == Tags []) pomodors)
     tagged = fmt <$> M.toAscList byTag
   in noTag : tagged
 
@@ -129,7 +131,7 @@ updateView v pbs tModel s = do
       PomodoroCounting _ c -> "P " <> formatCounting c
       PauseCounting c -> "  " <> formatCounting c
     allPomodors = (currentPomodor s ^.. _Just) ++ (s ^. sTodayPomodors)
-    timeSpent = formatTimeDiff $ sumOf (folded . pdLen) allPomodors
+    timeSpent = formatTimeDiff $ sumOf (folded . #pdLen) allPomodors
     pbuf = case s ^. sBurn of
       Waiting             -> pbs ^. pInit
       PomodoroCounting {} -> pbs ^. pPomodoro
@@ -138,8 +140,8 @@ updateView v pbs tModel s = do
     model <- readTVar tModel
     let
       newT = s ^. sTags
-      oldT = model ^. mTags . _Tags
-    writeTVar tModel $ model & (mTags . _Tags) .~ newT
+      oldT = model ^. mTags . #_Tags
+    writeTVar tModel $ model & (mTags . #_Tags) .~ newT
     return $ if S.fromList oldT == S.fromList newT
              then Nothing
              else Just newT
@@ -178,7 +180,7 @@ newController hp v pbs = do
       , _cSetTags = \tags -> do
           atomically $ do
             modifyTVar clientModel $ mTags .~ tags
-          method $ setTags $ tags ^. _Tags
+          method $ setTags $ tags ^. #_Tags
       }
   return result
   where

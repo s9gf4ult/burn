@@ -5,6 +5,7 @@ import Data.Aeson
 import Data.Aeson.TH as J
 import Data.Csv
 import Data.Default
+import Data.Generics.Labels ()
 import Data.Text as T
 import Data.Time
 import Data.Time.Clock.POSIX
@@ -12,17 +13,10 @@ import GHC.Generics (Generic)
 
 data Notification
   = PomodoroFinished | PauseFinished
-  deriving (Eq, Ord, Show, Generic)
-
-makePrisms ''Notification
-deriveJSON
-  J.defaultOptions
-  ''Notification
+  deriving (Eq, Ord, Show, Generic, ToJSON, FromJSON)
 
 newtype Tags = Tags [Text]
   deriving (Eq, Ord, Show, Generic, FromJSON, ToJSON)
-
-makePrisms ''Tags
 
 instance FromField Tags where
   parseField f = do
@@ -58,13 +52,11 @@ instance ToField ZonedTime where
   toField = toField . formatTime defaultTimeLocale iso8601
 
 data PomodoroData date = PomodoroData
-  { _pdStarted :: !date
-  , _pdLen     :: !NominalDiffTime
-  , _pdTags    :: !Tags
-  } deriving (Eq, Ord, Show, Generic, Functor, Foldable, Traversable)
+  { pdStarted :: !date
+  , pdLen     :: !NominalDiffTime
+  , pdTags    :: !Tags
+  } deriving (Eq, Ord, Show, Generic, Functor, Foldable, Traversable, FromJSON, ToJSON)
 
-makeLenses ''PomodoroData
-deriveJSON J.defaultOptions ''PomodoroData
 instance (FromField a) => FromRecord (PomodoroData a)
 instance (ToField a) => ToRecord (PomodoroData a)
 

@@ -15,7 +15,7 @@ extra-source-files:  README.md
 
 data-files: glade/main.glade
           , images/*.png
-                
+
 library
   hs-source-dirs: src
   default-language: Haskell2010
@@ -28,12 +28,13 @@ library
                  , Burn.Gtk.View
   build-depends: base >= 4.6 && < 5
                , burn
+               , containers
                , data-default
                , formatting
+               , generic-lens
                , gtk3
                , http-client
                , lens
-               , containers
                , optparse-applicative
                , process
                , servant >= 0.9.1.1
@@ -43,15 +44,18 @@ library
                , time
                , transformers-base
   default-extensions: DataKinds
+                    , FlexibleContexts
                     , LambdaCase
                     , MultiWayIf
                     , NumDecimals
+                    , OverloadedLabels
                     , OverloadedStrings
                     , RecordWildCards
+                    , ScopedTypeVariables
                     , TemplateHaskell
                     , TypeOperators
                     , ViewPatterns
-                        
+
 
 executable burn-gtk
   default-language: Haskell2010

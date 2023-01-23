@@ -7,6 +7,7 @@ import Burn.Types
 import Control.Lens
 import Data.Aeson
 import Data.Aeson.TH
+import Data.Generics.Labels ()
 import Data.Int
 import Data.List as L
 import Data.Monoid
@@ -39,14 +40,14 @@ elasticPomodoro eod p = ElasticPomodoro
   , _epRealDay       = formatTime defaultTimeLocale "%F" day
   , _epWeekday       = formatTime defaultTimeLocale "%u" day
   , _epHourOfDay     = hod
-  , _epTags          = p ^. pdTags . _Tags
+  , _epTags          = p ^. #pdTags . #_Tags
   , _epDuration      = duration
   , _epDurationHours = realToFrac duration * 3600
   }
   where
-    duration = p ^. pdLen . to round
+    duration = p ^. #pdLen . to round
     utc = zonedTimeToUTC zoned
-    zoned = p ^. pdStarted
+    zoned = p ^. #pdStarted
     day = timeDay eod zoned
     hod = (realToFrac $ timeOfDayToTime $ localTimeOfDay $ zonedTimeToLocalTime zoned) / 3600
 

@@ -51,6 +51,7 @@ library
                , directory
                , dlist
                , foldl
+               , generic-lens
                , http-client
                , inflections
                , lens
@@ -69,6 +70,7 @@ library
                , warp
   default-extensions: DataKinds
                     , DefaultSignatures
+                    , DeriveAnyClass
                     , DeriveFoldable
                     , DeriveFunctor
                     , DeriveGeneric
@@ -82,6 +84,7 @@ library
                     , LambdaCase
                     , MultiParamTypeClasses
                     , MultiWayIf
+                    , OverloadedLabels
                     , OverloadedStrings
                     , PolyKinds
                     , ScopedTypeVariables
@@ -98,6 +101,7 @@ test-suite spec
   default-language: Haskell2010
   default-extensions: FlexibleContexts
                     , NegativeLiterals
+                    , OverloadedLabels
                     , OverloadedStrings
                     , TemplateHaskell
   build-depends: base
