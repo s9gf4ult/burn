@@ -68,19 +68,13 @@ data Counting = Counting
 data Burn
   = Waiting
   | PomodoroCounting
-    { _bSavedFrom :: UTCTime
-    , _bCounting  :: Counting
+    { savedFrom :: UTCTime
+    , counting  :: Counting
     }
   | PauseCounting
-    { _bCounting :: Counting
+    { counting :: Counting
     }
-  deriving (Eq, Ord, Show)
-
-makePrisms ''Burn
-makeLenses ''Burn
-deriveJSON
-  J.defaultOptions
-  ''Burn
+  deriving (Eq, Ord, Show, Generic, FromJSON, ToJSON)
 
 instance Default Burn where
   def = Waiting

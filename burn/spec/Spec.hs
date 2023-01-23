@@ -74,12 +74,12 @@ isolate action = do
 
 pauseLenShould :: NominalDiffTime -> SIO ()
 pauseLenShould expected = do
-  plen <- preuse $ sState . #burn . _PauseCounting . #length
+  plen <- preuse $ sState . #burn . #_PauseCounting . #length
   liftBase $ assertEqual "Pause should be: " (Just expected) plen
 
 pomodoroLenShould :: NominalDiffTime -> SIO ()
 pomodoroLenShould expected = do
-  pomLen <- preuse $ sState . #burn . _PomodoroCounting . _2 . #length
+  pomLen <- preuse $ sState . #burn . #_PomodoroCounting . _2 . #length
   liftBase $ assertEqual "Pomodoro should be: " (Just expected) pomLen
 
 pomodoroSaved :: NominalDiffTime -> [AcNot] -> SIO ()

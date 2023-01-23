@@ -70,7 +70,7 @@ formatTimeDiff (truncate -> seconds) =
 currentPomodor :: ServerState -> Maybe (PomodoroData UTCTime)
 currentPomodor s =
   let
-    counting = s ^? #burn . _PomodoroCounting . _2
+    counting = s ^? #burn . #_PomodoroCounting . _2
     started  = counting ^? _Just . #started
     now      = s ^. #lastMsg
     len      = diffUTCTime now <$> started
