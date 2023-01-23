@@ -8,6 +8,7 @@ import Control.Concurrent.STM
 import Control.Lens
 import Control.Monad.Base
 import Data.Default
+import Data.Foldable
 import Data.Time
 import Data.Vector as V
 import Network.Wai.Handler.Warp (run)
@@ -19,28 +20,6 @@ data Payload = Payload
   }
 
 makeLenses ''Payload
-
-initPayload :: IO Payload
-initPayload = do
-  zt <- getZonedTime
-  let
-    now = zonedTimeToUTC zt
-    settings = def              -- FIXME: take from args
-    eod = settings ^. sDayEnd
-    day = timeDay eod zt
-  pomodors <- loadPomodors $ settings ^. sDataFile
-  let
-    pMap = splitPomodoros eod $ V.toList pomodors
-    todayZoned = pMap ^.. ix day . folded
-    todayUtc = over (traversed . pdStarted) zonedTimeToUTC todayZoned
-    state = mkServerState now & sTodayPomodors .~ todayUtc
-  print todayZoned
-  Payload <$> newTVarIO state <*> newTVarIO settings
-
-burn :: IO ()
-burn = do
-  p <- initPayload
-  run 1338 $ serve burnAPI $ handlers p
 
 handlers :: Payload -> Server BurnAPI
 handlers p
@@ -67,7 +46,8 @@ handleMessage evt p = liftBase $ do
   print evt
   pomodors <- (traversed . traversed) utcToLocalZonedTime
     $ actions ^.. folded . _SavePomodoro
-  savePomodoros (settings ^. sDataFile) pomodors
+  for_ (settings ^. sDataFile) $ \p -> do
+    savePomodoros p pomodors
   return newSt
 
 startPomodoro :: Payload -> Server StartPomodoroAPI

@@ -42,7 +42,9 @@ initPayload settings = do
     now = zonedTimeToUTC zt
     eod = settings ^. sDayEnd
     day = timeDay eod zt
-  pomodors <- loadPomodors $ settings ^. sDataFile
+  pomodors <- case settings ^. sDataFile of
+    Just p -> loadPomodors p
+    Nothing -> pure mempty
   let
     pMap = splitPomodoros eod $ V.toList pomodors
     todayZoned = pMap ^.. ix day . folded
@@ -85,7 +87,9 @@ runBurnClient ca = case ca ^. caCommands of
 
 runBurnStats :: StatArgs -> IO ()
 runBurnStats (StatArgs s q) = do
-  p <- loadPomodors $ s ^. sDataFile -- FIXME: from options
+  p <- case s ^. sDataFile of
+    Just f -> loadPomodors f
+    Nothing -> pure mempty
   printStatsQuery (s ^. sDayEnd) q p
 
 -- runElastic :: ElasticArgs -> IO ()

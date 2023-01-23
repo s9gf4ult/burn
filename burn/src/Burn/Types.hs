@@ -147,7 +147,7 @@ data Settings = Settings
   , _sPauseLen    :: !NominalDiffTime
   , _sLongPause   :: !NominalDiffTime
   , _sDayEnd      :: !TimeOfDay
-  , _sDataFile    :: !FilePath
+  , _sDataFile    :: !(Maybe FilePath)
   } deriving (Eq, Ord, Show)
 
 makeLenses ''Settings
@@ -158,5 +158,5 @@ instance Default Settings where
     , _sPauseLen    = 5 * 60
     , _sLongPause   = 15 * 60
     , _sDayEnd      = TimeOfDay 5 0 0
-    , _sDataFile    = "/home/razor/burn/pomodoros.csv" -- FIXME: make configurable
+    , _sDataFile    = Nothing
     }

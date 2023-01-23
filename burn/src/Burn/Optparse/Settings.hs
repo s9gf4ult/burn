@@ -27,11 +27,11 @@ hostPort = HostPort
     port = long "port" <> short 'p'
       <> help "Port" <> value (def ^. hpPort)
 
-pomodorosFile :: Parser FilePath
-pomodorosFile = strOption filePath
+pomodorosFile :: Parser (Maybe  FilePath)
+pomodorosFile = optional $ strOption filePath
   where
     filePath = long "file" <> short 'f'
-      <> help "CSV file with pomodors to store" <> value (def ^. sDataFile)
+      <> help "CSV file with pomodors to store"
 
 dayEnd :: Parser TimeOfDay
 dayEnd = option todReader eod
