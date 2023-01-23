@@ -1,6 +1,7 @@
 { mkDerivation, base, burn, containers, data-default, formatting
-, gtk3, http-client, lens, lib, optparse-applicative, process
-, servant, servant-client, stm, text, time, transformers-base
+, generic-lens, gtk3, http-client, lens, lib, optparse-applicative
+, process, servant, servant-client, stm, text, time
+, transformers-base
 }:
 mkDerivation {
   pname = "burn-gtk";
@@ -10,9 +11,9 @@ mkDerivation {
   isExecutable = true;
   enableSeparateDataOutput = true;
   libraryHaskellDepends = [
-    base burn containers data-default formatting gtk3 http-client lens
-    optparse-applicative process servant servant-client stm text time
-    transformers-base
+    base burn containers data-default formatting generic-lens gtk3
+    http-client lens optparse-applicative process servant
+    servant-client stm text time transformers-base
   ];
   executableHaskellDepends = [ base ];
   homepage = "https://github.com/githubuser/burn-gtk#readme";
