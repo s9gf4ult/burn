@@ -61,14 +61,9 @@ instance (FromField a) => FromRecord (PomodoroData a)
 instance (ToField a) => ToRecord (PomodoroData a)
 
 data Counting = Counting
-  { _cLen      :: NominalDiffTime
-  , _cStarted  :: UTCTime
-  } deriving (Show)
-
-makeLenses ''Counting
-deriveJSON
-  J.defaultOptions
-  ''Counting
+  { length  :: NominalDiffTime
+  , started :: UTCTime
+  } deriving (Eq, Ord, Show, Generic, FromJSON, ToJSON)
 
 data Burn
   = Waiting

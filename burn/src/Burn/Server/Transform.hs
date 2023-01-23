@@ -112,45 +112,45 @@ processBurn s (Message now evt) tags burn = case evt of
     Waiting ->
       let
         res = PomodoroCounting now $ Counting
-          { _cStarted = now
-          , _cLen = s ^. sPomodoroLen
+          { started = now
+          , length = s ^. sPomodoroLen
           }
       in (res, [])
     b@(PomodoroCounting {}) -> (b, [])
     PauseCounting c ->
       let
-        passed = diffUTCTime now $ c ^. cStarted
+        passed = diffUTCTime now $ c ^. #started
         stdPom = s ^. sPomodoroLen
         stdPause = s ^. sPauseLen
-        -- (passed + (5 - cLen)) / 5 = x / 25 => x = 25 * (passed + (5 - cLen)) / 5
+        -- (passed + (5 - #length)) / 5 = x / 25 => x = 25 * (passed + (5 - #length)) / 5
         pomLen = min (s ^. sPomodoroLen)
-          $ stdPom * (passed + (stdPause - c ^. cLen)) / stdPause
+          $ stdPom * (passed + (stdPause - c ^. #length)) / stdPause
         newC = Counting
-          { _cLen      = pomLen
-          , _cStarted  = now
+          { length      = pomLen
+          , started  = now
           }
       in (PomodoroCounting now newC, [])
   StartPause -> case burn of
     Waiting ->
       let
         res = PauseCounting $ Counting
-          { _cStarted = now
-          , _cLen = s ^. sPauseLen
+          { started = now
+          , length = s ^. sPauseLen
           }
       in (res, [])
     PomodoroCounting lastSaved' c ->
       let
-        passed = diffUTCTime now $ c ^. cStarted
+        passed = diffUTCTime now $ c ^. #started
         stdPom = s ^. sPomodoroLen
         stdPause = s ^. sPauseLen
-        -- (passed + (25 - cLen)) / 25 = x / 5 => x = 5 * (passed + (25 - cLen)) / 25
+        -- (passed + (25 - #length)) / 25 = x / 5 => x = 5 * (passed + (25 - #length)) / 25
         pauseLen = min (s ^. sLongPause)
-          $ stdPause * (passed + (stdPom - c ^. cLen)) / stdPom
+          $ stdPause * (passed + (stdPom - c ^. #length)) / stdPom
         newC = Counting
-          { _cStarted  = now
-          , _cLen      = pauseLen
+          { started  = now
+          , length      = pauseLen
           }
-        lastSaved = max lastSaved' (c ^. cStarted)
+        lastSaved = max lastSaved' (c ^. #started)
         pomodoro = PomodoroData
           { started = lastSaved
           , length     = diffUTCTime now $ lastSaved
@@ -161,7 +161,7 @@ processBurn s (Message now evt) tags burn = case evt of
     PomodoroCounting lastSaved' c
       | newTags /= tags ->
         let
-          lastSaved = max lastSaved' $ c ^. cStarted
+          lastSaved = max lastSaved' $ c ^. #started
           pomodoro = PomodoroData
             { started = lastSaved
             , length = diffUTCTime now lastSaved

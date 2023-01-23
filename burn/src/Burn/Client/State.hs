@@ -37,5 +37,5 @@ updateState now server client = case server ^. sBurn of
 -- | Couning is overruned
 overrun :: UTCTime -> Counting -> Bool
 overrun now c =
-  let passed = diffUTCTime now $ c ^. cStarted
-  in passed >= (c ^. cLen)
+  let passed = diffUTCTime now $ c ^. #started
+  in passed >= (c ^. #length)

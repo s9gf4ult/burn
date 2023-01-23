@@ -71,7 +71,7 @@ currentPomodor :: ServerState -> Maybe (PomodoroData UTCTime)
 currentPomodor s =
   let
     counting = s ^? sBurn . _PomodoroCounting . _2
-    started  = counting ^? _Just . cStarted
+    started  = counting ^? _Just . #started
     now      = s ^. sLastMsg
     len      = diffUTCTime now <$> started
     tags     = Tags $ s ^. sTags
@@ -123,8 +123,8 @@ updateView v pbs tModel s = do
     now = s ^. sLastMsg
     formatCounting c =
       let
-        passed = formatTimeDiff $ diffUTCTime now $ c ^. cStarted
-        len = formatTimeDiff $ c ^. cLen
+        passed = formatTimeDiff $ diffUTCTime now $ c ^. #started
+        len = formatTimeDiff $ c ^. #length
       in passed <> "/" <> len
     counterText = case s ^. sBurn of
       Waiting -> "--:--"

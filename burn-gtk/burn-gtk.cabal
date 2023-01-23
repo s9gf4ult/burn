@@ -26,6 +26,7 @@ library
                  , Burn.Gtk.Model
                  , Burn.Gtk.Run
                  , Burn.Gtk.View
+  other-modules: Paths_burn_gtk
   build-depends: base >= 4.6 && < 5
                , burn
                , containers
