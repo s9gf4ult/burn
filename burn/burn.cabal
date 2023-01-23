@@ -75,6 +75,7 @@ library
                     , DeriveFunctor
                     , DeriveGeneric
                     , DeriveTraversable
+                    , DuplicateRecordFields
                     , FlexibleContexts
                     , FlexibleInstances
                     , FunctionalDependencies

@@ -109,11 +109,11 @@ byTagTimes pomodors =
   let
     byTag = M.fromListWith (<>) $ do
       pmd <- pomodors
-      tag :: Text <- pmd ^. #pdTags . #_Tags
+      tag :: Text <- pmd ^. #tags . #_Tags
       return (tag, [pmd])
     fmt (tag, p) =
-      (tag, formatTimeDiff $ sumOf (folded . #pdLen) p)
-    noTag = fmt ("No tag", L.filter (\a -> a ^. #pdTags == Tags []) pomodors)
+      (tag, formatTimeDiff $ sumOf (folded . #length) p)
+    noTag = fmt ("No tag", L.filter (\a -> a ^. #tags == Tags []) pomodors)
     tagged = fmt <$> M.toAscList byTag
   in noTag : tagged
 
@@ -131,7 +131,7 @@ updateView v pbs tModel s = do
       PomodoroCounting _ c -> "P " <> formatCounting c
       PauseCounting c -> "  " <> formatCounting c
     allPomodors = (currentPomodor s ^.. _Just) ++ (s ^. sTodayPomodors)
-    timeSpent = formatTimeDiff $ sumOf (folded . #pdLen) allPomodors
+    timeSpent = formatTimeDiff $ sumOf (folded . #length) allPomodors
     pbuf = case s ^. sBurn of
       Waiting             -> pbs ^. pInit
       PomodoroCounting {} -> pbs ^. pPomodoro

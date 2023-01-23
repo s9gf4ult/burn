@@ -84,7 +84,7 @@ pomodoroLenShould expected = do
 
 pomodoroSaved :: NominalDiffTime -> [AcNot] -> SIO ()
 pomodoroSaved expected a = do
-  let plen = sumOf (folded . _Right . _SavePomodoro . #pdLen) a
+  let plen = sumOf (folded . _Right . _SavePomodoro . #length) a
   liftBase $ assertEqual "Saved pomodoro length: " expected plen
 
 pomodoroFinished :: [AcNot] -> SIO ()
@@ -110,7 +110,7 @@ resetTimers acnot = do
 todayPomodoros :: NominalDiffTime -> SIO ()
 todayPomodoros psum = do
   p <- use $ sState . sTodayPomodors
-  liftBase $ assertEqual "Today pomodoros" psum $ sumOf (folded . #pdLen) p
+  liftBase $ assertEqual "Today pomodoros" psum $ sumOf (folded . #length) p
 
 shortPomodoro :: Assertion
 shortPomodoro = runSIO $ do

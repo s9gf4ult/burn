@@ -48,7 +48,7 @@ initPayload settings = do
   let
     pMap = splitPomodoros eod $ V.toList pomodors
     todayZoned = pMap ^.. ix day . folded
-    todayUtc = over (traversed . #pdStarted) zonedTimeToUTC todayZoned
+    todayUtc = over (traversed . #started) zonedTimeToUTC todayZoned
     state = mkServerState now & sTodayPomodors .~ todayUtc
   print todayZoned
   Payload <$> newTVarIO state <*> newTVarIO settings

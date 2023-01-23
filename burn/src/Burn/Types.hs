@@ -52,9 +52,9 @@ instance ToField ZonedTime where
   toField = toField . formatTime defaultTimeLocale iso8601
 
 data PomodoroData date = PomodoroData
-  { pdStarted :: !date
-  , pdLen     :: !NominalDiffTime
-  , pdTags    :: !Tags
+  { started :: !date
+  , length  :: !NominalDiffTime
+  , tags    :: !Tags
   } deriving (Eq, Ord, Show, Generic, Functor, Foldable, Traversable, FromJSON, ToJSON)
 
 instance (FromField a) => FromRecord (PomodoroData a)
