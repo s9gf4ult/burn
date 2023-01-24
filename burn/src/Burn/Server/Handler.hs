@@ -11,15 +11,14 @@ import Data.Default
 import Data.Foldable
 import Data.Time
 import Data.Vector as V
+import GHC.Generics (Generic)
 import Network.Wai.Handler.Warp (run)
 import Servant
 
 data Payload = Payload
-  { _pState    :: TVar ServerState
-  , _pSettings :: TVar Settings
-  }
-
-makeLenses ''Payload
+  { state    :: TVar ServerState
+  , settings :: TVar Settings
+  } deriving Generic
 
 handlers :: Payload -> Server BurnAPI
 handlers p
@@ -37,11 +36,11 @@ handleMessage evt p = liftBase $ do
   tz <- getCurrentTimeZone
   let msg = Message now evt
   (settings, (newSt, actions)) <- atomically $ do
-    state <- readTVar $ p ^. pState
-    settings <- readTVar $ p ^. pSettings
+    state <- readTVar $ p ^. #state
+    settings <- readTVar $ p ^. #settings
     check $ state ^. #lastMsg < now
     let res@(newSt, _) = process settings tz msg state
-    writeTVar (p ^. pState) newSt
+    writeTVar (p ^. #state) newSt
     return (settings, res)
   print evt
   pomodors <- (traversed . traversed) utcToLocalZonedTime
