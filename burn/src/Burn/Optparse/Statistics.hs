@@ -41,4 +41,4 @@ statQuery = option parseStatistics
       "hourly" -> return StatHourly
 
 statArgs :: Parser StatArgs
-statArgs = StatArgs <$> settings <*> statQuery
+statArgs = StatArgs <$> parseSettings <*> statQuery

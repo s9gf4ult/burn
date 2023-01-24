@@ -17,8 +17,8 @@ data HostPort = HostPort
 instance Default HostPort where
   def = HostPort "127.0.0.1" 1338
 
-hostPort :: Parser HostPort
-hostPort = HostPort
+parseHostPort :: Parser HostPort
+parseHostPort = HostPort
   <$> strOption host
   <*> option auto port
   where
@@ -44,8 +44,8 @@ parseDayEnd = option todReader eod
 todReader :: ReadM TimeOfDay
 todReader = str >>= parseTimeM True defaultTimeLocale "%R"
 
-settings :: Parser Settings
-settings = Settings
+parseSettings :: Parser Settings
+parseSettings = Settings
   <$> option timeReader pomLen
   <*> option timeReader pauseLen
   <*> option timeReader longPause

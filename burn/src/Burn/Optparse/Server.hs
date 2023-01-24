@@ -1,21 +1,20 @@
 module Burn.Optparse.Server where
 
-import Burn.Optparse.Settings
+import Burn.Optparse.Settings as Opt
 import Burn.Types
 import Control.Lens
 import Data.Default
 import Data.Monoid
 import Data.Time
+import GHC.Generics (Generic)
 import Options.Applicative
 
 data ServerArgs = ServerArgs
-  { _saHostPort :: HostPort
-  , _saSettings :: Settings
-  } deriving (Eq, Ord, Show)
+  { hostPort :: HostPort
+  , settings :: Settings
+  } deriving (Eq, Ord, Show, Generic)
 
-makeLenses ''ServerArgs
-
-serverArgs :: Parser ServerArgs
-serverArgs = ServerArgs
-  <$> hostPort
-  <*> settings
+parseServerArgs :: Parser ServerArgs
+parseServerArgs = ServerArgs
+  <$> Opt.parseHostPort
+  <*> Opt.parseSettings

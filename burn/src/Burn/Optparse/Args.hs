@@ -21,7 +21,7 @@ argsParser = helper <*> go
     go = (Server <$> subparser server) <|> (Client <$> subparser client)
       -- <|> (Elastic <$> subparser elastic)
       <|> (Statistics <$> subparser stat)
-    server = command "server" $ info (helper <*> serverArgs)
+    server = command "server" $ info (helper <*> parseServerArgs)
       $ progDesc "start burn server" <> fullDesc
     client = command "client" $ info (helper <*> clientArgs)
       $ progDesc "send command to server" <> fullDesc

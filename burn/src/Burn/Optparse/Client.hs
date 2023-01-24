@@ -44,5 +44,5 @@ makeLenses ''ClientArgs
 
 clientArgs :: Parser ClientArgs
 clientArgs = ClientArgs
-  <$> hostPort
+  <$> parseHostPort
   <*> commands

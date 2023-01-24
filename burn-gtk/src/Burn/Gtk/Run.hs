@@ -2,7 +2,7 @@ module Burn.Gtk.Run where
 
 import Burn.Gtk.Controller
 import Burn.Gtk.View
-import Burn.Optparse
+import Burn.Optparse as Opt
 import Control.Lens
 import Control.Monad
 import Data.Monoid
@@ -10,7 +10,7 @@ import Graphics.UI.Gtk
 import Options.Applicative
 
 hostPortInfo :: ParserInfo HostPort
-hostPortInfo = info (helper <*> hostPort) $
+hostPortInfo = info (helper <*> Opt.parseHostPort) $
   progDesc "Gtk client for Burn" <> fullDesc
 
 burnGtk :: (String -> IO String) -> IO ()
