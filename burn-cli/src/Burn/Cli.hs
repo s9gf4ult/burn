@@ -57,8 +57,8 @@ runBurnServer :: ServerArgs -> IO ()
 runBurnServer args = do
   payload <- initPayload $ args ^. saSettings
   let
-    host = fromString $ args ^. saHostPort . hpHost
-    port = args ^. saHostPort . hpPort
+    host = fromString $ args ^. saHostPort . #host
+    port = args ^. saHostPort . #port
     s = defaultSettings & setPort port & setHost host
   runSettings s $ serve burnAPI $ handlers payload
 

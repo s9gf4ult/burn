@@ -21,8 +21,8 @@ hostPortClientEnv :: HostPort -> IO ClientEnv
 hostPortClientEnv hp = do
   m <- newManager defaultManagerSettings
   let
-    host    = hp ^. hpHost
-    port    = hp ^. hpPort
+    host    = hp ^. #host
+    port    = hp ^. #port
     baseUri = BaseUrl Http host port ""
     env     = mkClientEnv m baseUri
   return env

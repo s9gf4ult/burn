@@ -3,16 +3,16 @@ module Burn.Optparse.Settings where
 import Burn.Types
 import Control.Lens
 import Data.Default
+import Data.Generics.Labels ()
 import Data.Monoid
 import Data.Time
+import GHC.Generics (Generic)
 import Options.Applicative
 
 data HostPort = HostPort
-  { _hpHost :: String
-  , _hpPort :: Int
-  } deriving (Eq, Ord, Show)
-
-makeLenses ''HostPort
+  { host :: String
+  , port :: Int
+  } deriving (Eq, Ord, Show, Generic)
 
 instance Default HostPort where
   def = HostPort "127.0.0.1" 1338
@@ -22,10 +22,12 @@ hostPort = HostPort
   <$> strOption host
   <*> option auto port
   where
+    defHostPort :: HostPort
+    defHostPort = def
     host = long "address" <> short 'a'
-      <> help "Address to listen/connect" <> value (def ^. hpHost)
+      <> help "Address to listen/connect" <> value (defHostPort ^. #host)
     port = long "port" <> short 'p'
-      <> help "Port" <> value (def ^. hpPort)
+      <> help "Port" <> value (defHostPort ^. #port)
 
 pomodorosFile :: Parser (Maybe  FilePath)
 pomodorosFile = optional $ strOption filePath
