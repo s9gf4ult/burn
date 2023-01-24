@@ -2,6 +2,6 @@
 }:
 
 let
-  pkgsOverlay = import ./pkgsOverlay.nix {} ;
+  pkgsOverlay = import ./pkgsOverlay.nix { attr = "burn"; } ;
   pkgs = nixpkgs { overlays = [pkgsOverlay ]; };
-in [ pkgs.burn-cli pkgs.burn-gtk ]
+in pkgs.burn
