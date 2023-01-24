@@ -39,6 +39,13 @@ packages:
       size: 1506
   original:
     hackage: pango-0.13.8.2
+- completed:
+    hackage: bloodhound-0.21.0.0@sha256:fc20da30aee25e4af32aa292dbd1492b75b681f215a9cc67ce0f3d23b13584ec,3321
+    pantry-tree:
+      sha256: 231e6142f35b19a1a280d7c87ec8c5352d73f90ac288badc9b6819861c5b2f9d
+      size: 2922
+  original:
+    hackage: bloodhound-0.21.0.0
 snapshots:
 - completed:
     sha256: 005f204647467d65c4ab549a5ca35d54b3d90a84a99a4ffc5d421a4018854fe2

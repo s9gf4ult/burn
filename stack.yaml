@@ -10,6 +10,7 @@ extra-deps:
   - gio-0.13.8.2
   - glib-0.13.8.2
   - pango-0.13.8.2
+  - bloodhound-0.21.0.0
 
 resolver: lts-19.10
 nix:
