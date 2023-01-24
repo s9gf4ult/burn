@@ -6,6 +6,7 @@ import Control.Lens
 import Data.Monoid
 import Data.Text
 import Data.Traversable
+import GHC.Generics (Generic)
 import Options.Applicative
 
 import qualified Data.Text as T
@@ -24,8 +25,8 @@ readCommand t = case T.strip <$> T.words t of
   (x:_)         -> Left $ "unknown command \"" <> T.unpack x <> "\""
   []            -> Left "empty command string"
 
-commands :: Parser [Command]
-commands = option go m
+parseCommands :: Parser [Command]
+parseCommands = option go m
   where
     m = long "commands" <> short 'c'
       <> help "Comma separated list of commands" <> value []
@@ -36,13 +37,12 @@ commands = option go m
         Right a -> return a
 
 data ClientArgs = ClientArgs
-  { _caHostPort :: HostPort
-  , _caCommands :: [Command]
-  } deriving (Eq, Ord, Show)
+  { hostPort :: HostPort
+  , commands :: [Command]
+  } deriving (Eq, Ord, Show, Generic)
 
-makeLenses ''ClientArgs
 
 clientArgs :: Parser ClientArgs
 clientArgs = ClientArgs
   <$> parseHostPort
-  <*> commands
+  <*> parseCommands

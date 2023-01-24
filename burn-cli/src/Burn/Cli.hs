@@ -63,10 +63,10 @@ runBurnServer args = do
   runSettings s $ serve burnAPI $ handlers payload
 
 runBurnClient :: ClientArgs -> IO ()
-runBurnClient ca = case ca ^. caCommands of
+runBurnClient ca = case ca ^. #commands of
   [] -> fail "List of commands must be non empty"
   commands -> do
-    env <- hostPortClientEnv $ ca ^. caHostPort
+    env <- hostPortClientEnv $ ca ^. #hostPort
     for_ commands $ \c -> do
       executeCommand env c
 
