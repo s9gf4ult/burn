@@ -1,7 +1,7 @@
 module Burn.Gtk.Controller where
 
 import Burn.API
-import Burn.Client
+import Burn.Client as C
 import Burn.Gtk.Model
 import Burn.Gtk.View
 import Burn.Optparse
@@ -21,6 +21,7 @@ import Data.Set as S
 import Data.Text as T
 import Data.Time
 import Formatting hiding (now)
+import GHC.Generics (Generic)
 import Graphics.UI.Gtk as Gtk
 import Graphics.UI.Gtk.General.Enums
 import Servant.Client
@@ -28,13 +29,11 @@ import System.Process
 
 -- | Hooks to run when on some events
 data Controller = Controller
-  { _cStartPomodoro :: !(IO ())
-  , _cStartPause    :: !(IO ())
-  , _cTick          :: !(IO ())
-  , _cSetTags       :: !(Tags -> IO ())
-  }
-
-makeLenses ''Controller
+  { startPomodoro :: !(IO ())
+  , startPause    :: !(IO ())
+  , tick          :: !(IO ())
+  , setTags       :: !(Tags -> IO ())
+  } deriving Generic
 
 data Pixbufs = Pixbufs
   { _pInit     :: Pixbuf
@@ -174,13 +173,13 @@ newController hp v pbs = do
             return notifs
           traverse_ showNotification notifs
     result = Controller
-      { _cStartPomodoro = method startPomodoro
-      , _cStartPause    = method startPause
-      , _cTick          = method status
-      , _cSetTags = \tags -> do
+      { startPomodoro = method C.startPomodoro
+      , startPause    = method C.startPause
+      , tick          = method C.status
+      , setTags       = \tags -> do
           atomically $ do
             modifyTVar clientModel $ mTags .~ tags
-          method $ setTags $ tags ^. #_Tags
+          method $ C.setTags $ tags ^. #_Tags
       }
   return result
   where
@@ -193,13 +192,13 @@ newController hp v pbs = do
 connectSignals :: View -> Controller -> IO ()
 connectSignals v c = do
   void $ on (v ^. vMain) deleteEvent (False <$ liftBase mainQuit)
-  void $ on (v ^. vStartPomodoro) buttonActivated $ c ^. cStartPomodoro
-  void $ on (v ^. vStartPause) buttonActivated $ c ^. cStartPause
+  void $ on (v ^. vStartPomodoro) buttonActivated $ c ^. #startPomodoro
+  void $ on (v ^. vStartPause) buttonActivated $ c ^. #startPause
   void $ on (v ^. vTags) entryActivated $ do
     t <- entryGetText $ v ^. vTags
-    (c ^. cSetTags) $ Tags $ T.strip <$> T.words t
+    (c ^. #setTags) $ Tags $ T.strip <$> T.words t
 
   _ <- forkIO $ forever $ do
     threadDelay 1e6
-    c ^. cTick
+    c ^. #tick
   return ()

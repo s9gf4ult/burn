@@ -45,6 +45,7 @@ library
                , time
                , transformers-base
   default-extensions: DataKinds
+                    , DeriveGeneric
                     , FlexibleContexts
                     , LambdaCase
                     , MultiWayIf
