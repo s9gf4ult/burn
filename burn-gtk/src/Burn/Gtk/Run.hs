@@ -27,5 +27,5 @@ burnGtk getDataFileName = do
   v <- newView bld
   c <- newController hp v pixbufs
   connectSignals v c
-  widgetShowAll $ v ^. vMain
+  widgetShowAll $ v ^. #main
   mainGUI

@@ -35,19 +35,18 @@ data Controller = Controller
   , setTags       :: !(Tags -> IO ())
   } deriving Generic
 
+-- | Pixbufs to switch the tray icon
 data Pixbufs = Pixbufs
-  { _pInit     :: Pixbuf
-  , _pPomodoro :: Pixbuf
-  , _pPause    :: Pixbuf
-  }
-
-makeLenses ''Pixbufs
+  { init     :: Pixbuf
+  , pomodoro :: Pixbuf
+  , pause    :: Pixbuf
+  } deriving Generic
 
 initPixbufs :: FilePath -> FilePath -> FilePath -> IO Pixbufs
 initPixbufs initImg pom pause = do
-  _pInit <- pixbufNewFromFile initImg
-  _pPomodoro <- pixbufNewFromFile pom
-  _pPause <- pixbufNewFromFile pause
+  init <- pixbufNewFromFile initImg
+  pomodoro <- pixbufNewFromFile pom
+  pause <- pixbufNewFromFile pause
   return $ Pixbufs{..}
 
 formatTimeDiff :: NominalDiffTime -> Text
@@ -132,9 +131,9 @@ updateView v pbs tModel s = do
     allPomodors = (currentPomodor s ^.. _Just) ++ (s ^. #todayPomodoros)
     timeSpent = formatTimeDiff $ sumOf (folded . #length) allPomodors
     pbuf = case s ^. #burn of
-      Waiting             -> pbs ^. pInit
-      PomodoroCounting {} -> pbs ^. pPomodoro
-      PauseCounting {}    -> pbs ^. pPause
+      Waiting             -> pbs ^. #init
+      PomodoroCounting {} -> pbs ^. #pomodoro
+      PauseCounting {}    -> pbs ^. #pause
   mNewTags <- atomically $ do
     model <- readTVar tModel
     let
@@ -145,13 +144,13 @@ updateView v pbs tModel s = do
              then Nothing
              else Just newT
   postGUISync $ do
-    labelSetText (v ^. vCounter) counterText
-    labelSetText (v ^. vTimeSpent) timeSpent
+    labelSetText (v ^. #counter) counterText
+    labelSetText (v ^. #timeSpent) timeSpent
     for_ mNewTags $ \tags -> do
-      entrySetText (v ^. vTags) $ T.unwords tags
-    statusIconSetFromPixbuf (v ^. vStatusIcon) pbuf
-    statusIconSetTooltipText (v ^. vStatusIcon) $ Just counterText
-    updateTagsCounts (v ^. vByTags) (v ^. vTagsGrid) $ byTagTimes allPomodors
+      entrySetText (v ^. #tags) $ T.unwords tags
+    statusIconSetFromPixbuf (v ^. #statusIcon) pbuf
+    statusIconSetTooltipText (v ^. #statusIcon) $ Just counterText
+    updateTagsCounts (v ^. #byTags) (v ^. #tagsGrid) $ byTagTimes allPomodors
 
 newController :: HostPort -> View -> Pixbufs -> IO Controller
 newController hp v pbs = do
@@ -191,11 +190,11 @@ newController hp v pbs = do
 
 connectSignals :: View -> Controller -> IO ()
 connectSignals v c = do
-  void $ on (v ^. vMain) deleteEvent (False <$ liftBase mainQuit)
-  void $ on (v ^. vStartPomodoro) buttonActivated $ c ^. #startPomodoro
-  void $ on (v ^. vStartPause) buttonActivated $ c ^. #startPause
-  void $ on (v ^. vTags) entryActivated $ do
-    t <- entryGetText $ v ^. vTags
+  void $ on (v ^. #main) deleteEvent (False <$ liftBase mainQuit)
+  void $ on (v ^. #startPomodoro) buttonActivated $ c ^. #startPomodoro
+  void $ on (v ^. #startPause) buttonActivated $ c ^. #startPause
+  void $ on (v ^. #tags) entryActivated $ do
+    t <- entryGetText $ v ^. #tags
     (c ^. #setTags) $ Tags $ T.strip <$> T.words t
 
   _ <- forkIO $ forever $ do

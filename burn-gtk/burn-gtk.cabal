@@ -46,6 +46,7 @@ library
                , transformers-base
   default-extensions: DataKinds
                     , DeriveGeneric
+                    , DuplicateRecordFields
                     , FlexibleContexts
                     , LambdaCase
                     , MultiWayIf
