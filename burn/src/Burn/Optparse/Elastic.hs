@@ -13,22 +13,18 @@ import Data.List as L
 import Data.Monoid
 import Data.Text as T
 import Data.Time
+import GHC.Generics (Generic)
 import Options.Applicative
 
 data ElasticPomodoro = ElasticPomodoro
-  { _epTimestamp     :: String
-  , _epRealDay       :: String
-  , _epWeekday       :: String
-  , _epHourOfDay     :: Double
-  , _epTags          :: [Text]
-  , _epDuration      :: Int64
-  , _epDurationHours :: Double
-  }
-
-deriveJSON
-  defaultOptions
-  { fieldLabelModifier = toUnderscore' . L.drop 3 }
-  ''ElasticPomodoro
+  { timestamp     :: String
+  , realDay       :: String
+  , weekday       :: String
+  , hourOfDay     :: Double
+  , tags          :: [Text]
+  , duration      :: Int64
+  , durationHours :: Double
+  } deriving (Generic, FromJSON, ToJSON)
 
 elasticPomodoro
   :: TimeOfDay
@@ -36,13 +32,13 @@ elasticPomodoro
   -> PomodoroData ZonedTime
   -> ElasticPomodoro
 elasticPomodoro eod p = ElasticPomodoro
-  { _epTimestamp     = formatTime defaultTimeLocale "%FT%T" utc
-  , _epRealDay       = formatTime defaultTimeLocale "%F" day
-  , _epWeekday       = formatTime defaultTimeLocale "%u" day
-  , _epHourOfDay     = hod
-  , _epTags          = p ^. #tags . #_Tags
-  , _epDuration      = duration
-  , _epDurationHours = realToFrac duration * 3600
+  { timestamp     = formatTime defaultTimeLocale "%FT%T" utc
+  , realDay       = formatTime defaultTimeLocale "%F" day
+  , weekday       = formatTime defaultTimeLocale "%u" day
+  , hourOfDay     = hod
+  , tags          = p ^. #tags . #_Tags
+  , duration      = duration
+  , durationHours = realToFrac duration * 3600
   }
   where
     duration = p ^. #length . to round
