@@ -22,6 +22,7 @@ library
   hs-source-dirs: src
   ghc-options: -Wall
   exposed-modules: Burn.Gtk
+                 , Burn.Gtk.Cli
                  , Burn.Gtk.Controller
                  , Burn.Gtk.Model
                  , Burn.Gtk.Run

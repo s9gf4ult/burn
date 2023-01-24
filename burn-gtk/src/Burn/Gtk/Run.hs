@@ -1,21 +1,23 @@
 module Burn.Gtk.Run where
 
+import Burn.Gtk.Cli
 import Burn.Gtk.Controller
 import Burn.Gtk.View
 import Burn.Optparse as Opt
 import Control.Lens
 import Control.Monad
 import Data.Monoid
+import GHC.Generics (Generic)
 import Graphics.UI.Gtk
 import Options.Applicative
 
-hostPortInfo :: ParserInfo HostPort
-hostPortInfo = info (helper <*> Opt.parseHostPort) $
+hostPortInfo :: ParserInfo Opts
+hostPortInfo = info (helper <*> parseOpts) $
   progDesc "Gtk client for Burn" <> fullDesc
 
 burnGtk :: (String -> IO String) -> IO ()
 burnGtk getDataFileName = do
-  hp <- execParser hostPortInfo
+  opts <- execParser hostPortInfo
   _ <- initGUI
   bld <- builderNew
   xmlFile <- getDataFileName "glade/main.glade"
@@ -25,7 +27,7 @@ burnGtk getDataFileName = do
     <*> getDataFileName "images/short-tomat.png"
   builderAddFromFile bld xmlFile
   v <- newView bld
-  c <- newController hp v pixbufs
+  c <- newController opts v pixbufs
   connectSignals v c
   widgetShowAll $ v ^. #main
   mainGUI

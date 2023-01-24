@@ -2,6 +2,7 @@ module Burn.Gtk.Controller where
 
 import Burn.API
 import Burn.Client as C
+import Burn.Gtk.Cli
 import Burn.Gtk.Model
 import Burn.Gtk.View
 import Burn.Optparse
@@ -152,9 +153,9 @@ updateView v pbs tModel s = do
     statusIconSetTooltipText (v ^. #statusIcon) $ Just counterText
     updateTagsCounts (v ^. #byTags) (v ^. #tagsGrid) $ byTagTimes allPomodors
 
-newController :: HostPort -> View -> Pixbufs -> IO Controller
-newController hp v pbs = do
-  env <- hostPortClientEnv hp
+newController :: Opts -> View -> Pixbufs -> IO Controller
+newController opts v pbs = do
+  env <- hostPortClientEnv $ opts ^. #hostPort
   clientState <- newTVarIO def
   clientModel <- newTVarIO def
   let
@@ -183,10 +184,10 @@ newController hp v pbs = do
   return result
   where
     showNotification = \case
-      PomodoroFinished ->
-        void $ rawSystem "notify-send" ["-t", "0", "Take a break!"]
-      PauseFinished ->
-        void $ rawSystem "notify-send" ["-t", "0", "Go to work, lazy ass!"]
+      PomodoroFinished -> for_ (opts ^. #pomodoroCommand) $ \c ->
+        system c
+      PauseFinished -> for_ (opts ^. #pauseCommand) $ \c ->
+        system c
 
 connectSignals :: View -> Controller -> IO ()
 connectSignals v c = do
