@@ -86,6 +86,7 @@ library
                     , LambdaCase
                     , MultiParamTypeClasses
                     , MultiWayIf
+                    , NamedFieldPuns
                     , OverloadedLabels
                     , OverloadedStrings
                     , PolyKinds

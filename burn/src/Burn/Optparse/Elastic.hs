@@ -35,9 +35,9 @@ elasticPomodoro eod p = ElasticPomodoro
   { timestamp     = formatTime defaultTimeLocale "%FT%T" utc
   , realDay       = formatTime defaultTimeLocale "%F" day
   , weekday       = formatTime defaultTimeLocale "%u" day
-  , hourOfDay     = hod
+  , hourOfDay
   , tags          = p ^. #tags . #_Tags
-  , duration      = duration
+  , duration
   , durationHours = realToFrac duration * 3600
   }
   where
@@ -45,7 +45,7 @@ elasticPomodoro eod p = ElasticPomodoro
     utc = zonedTimeToUTC zoned
     zoned = p ^. #started
     day = timeDay eod zoned
-    hod = (realToFrac $ timeOfDayToTime $ localTimeOfDay $ zonedTimeToLocalTime zoned) / 3600
+    hourOfDay = (realToFrac $ timeOfDayToTime $ localTimeOfDay $ zonedTimeToLocalTime zoned) / 3600
 
 -- data ElasticArgs = ElasticArgs
 --   { _esDataFile      :: FilePath
