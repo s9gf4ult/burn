@@ -2,7 +2,6 @@ module Burn.Optparse.Elastic where
 
 import Burn.Optparse.Settings
 import Burn.Statistics.Functions
-import Burn.TH
 import Burn.Types
 import Control.Lens
 import Data.Aeson

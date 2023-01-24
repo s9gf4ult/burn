@@ -37,7 +37,6 @@ library
                  , Burn.Statistics.Query
                  , Burn.Statistics.Types
                  , Burn.Storage
-                 , Burn.TH
                  , Burn.Types
   build-depends: base >= 4.6 && <= 5
                , aeson
