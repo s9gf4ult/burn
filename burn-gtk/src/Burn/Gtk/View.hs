@@ -3,7 +3,6 @@
 module Burn.Gtk.View where
 
 import Control.Concurrent.STM.TVar
-import Control.Lens
 import GHC.Generics (Generic)
 import Graphics.UI.Gtk
 

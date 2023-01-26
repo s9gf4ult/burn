@@ -2,11 +2,9 @@ module Burn.Statistics.Query where
 
 import Burn.Optparse.Statistics
 import Burn.Statistics.Functions
-import Burn.Statistics.Types
 import Burn.Types
 import Control.Arrow
 import Control.Lens
-import Data.Foldable as F
 import Data.List as L
 import Data.Map.Strict as M
 import Data.Time

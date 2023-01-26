@@ -1,16 +1,6 @@
 module Burn.Statistics.Functions where
 
-import Burn.Statistics.Types
-import Burn.Types
-import Control.Foldl as FL
-import Control.Lens hiding (Fold)
-import Data.Foldable as F
-import Data.List as L
-import Data.Set as S
-import Data.Text as T
 import Data.Time
-import Data.Vector as V
-import Statistics.Sample.Histogram
 
 -- calculateStats
 --   :: (Foldable f)

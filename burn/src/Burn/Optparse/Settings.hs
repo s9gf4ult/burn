@@ -4,7 +4,6 @@ import Burn.Types
 import Control.Lens
 import Data.Default
 import Data.Generics.Labels ()
-import Data.Monoid
 import Data.Time
 import GHC.Generics (Generic)
 import Options.Applicative

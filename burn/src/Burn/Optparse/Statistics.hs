@@ -3,10 +3,6 @@ module Burn.Optparse.Statistics where
 import Burn.Optparse.Settings
 import Burn.Types
 import Control.Lens
-import Data.Default
-import Data.Monoid
-import Data.Time
-import Data.Traversable
 import Options.Applicative
 
 
@@ -36,7 +32,7 @@ statQuery = option parseStatistics
   where
     -- FIXME: implement the parser
     parseStatistics = str >>= \case
-      "daily" -> return StatDaily
+      ("daily" :: String) -> return StatDaily
       "weekly" -> return StatWeekly
       "hourly" -> return StatHourly
       _ -> fail "Unknown time window"

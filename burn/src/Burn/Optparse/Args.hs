@@ -1,7 +1,6 @@
 module Burn.Optparse.Args where
 
 import Burn.Optparse.Client
-import Burn.Optparse.Elastic
 import Burn.Optparse.Server
 import Burn.Optparse.Statistics
 import Control.Lens

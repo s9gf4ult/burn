@@ -5,8 +5,6 @@ import Burn.Client as C
 import Burn.Gtk.Cli
 import Burn.Gtk.Model
 import Burn.Gtk.View
-import Burn.Optparse
-import Burn.Types
 import Control.Concurrent
 import Control.Concurrent.STM
 import Control.Lens
@@ -17,7 +15,6 @@ import Data.Foldable
 import Data.Generics.Labels ()
 import Data.List as L
 import Data.Map.Strict as M
-import Data.Monoid
 import Data.Set as S
 import Data.Text as T
 import Data.Time
@@ -44,11 +41,10 @@ data Pixbufs = Pixbufs
   } deriving Generic
 
 initPixbufs :: FilePath -> FilePath -> FilePath -> IO Pixbufs
-initPixbufs initImg pom pause = do
-  init <- pixbufNewFromFile initImg
-  pomodoro <- pixbufNewFromFile pom
-  pause <- pixbufNewFromFile pause
-  return $ Pixbufs{..}
+initPixbufs initImg pom pause = Pixbufs
+  <$> pixbufNewFromFile initImg
+  <*> pixbufNewFromFile pom
+  <*> pixbufNewFromFile pause
 
 formatTimeDiff :: NominalDiffTime -> Text
 formatTimeDiff (truncate -> seconds) =

@@ -3,11 +3,8 @@ module Burn.Gtk.Run where
 import Burn.Gtk.Cli
 import Burn.Gtk.Controller
 import Burn.Gtk.View
-import Burn.Optparse as Opt
 import Control.Lens
 import Control.Monad
-import Data.Monoid
-import GHC.Generics (Generic)
 import Graphics.UI.Gtk
 import Options.Applicative
 

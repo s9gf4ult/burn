@@ -1,19 +1,14 @@
 module Burn.Optparse.Elastic where
 
-import Burn.Optparse.Settings
 import Burn.Statistics.Functions
 import Burn.Types
 import Control.Lens
 import Data.Aeson
-import Data.Aeson.TH
 import Data.Generics.Labels ()
 import Data.Int
-import Data.List as L
-import Data.Monoid
 import Data.Text as T
 import Data.Time
 import GHC.Generics (Generic)
-import Options.Applicative
 
 data ElasticPomodoro = ElasticPomodoro
   { timestamp     :: String
@@ -31,7 +26,7 @@ elasticPomodoro
   -> PomodoroData ZonedTime
   -> ElasticPomodoro
 elasticPomodoro eod p = ElasticPomodoro
-  { timestamp     = formatTime defaultTimeLocale "%FT%T" utc
+  { timestamp     = formatTime defaultTimeLocale "%FT%T" utcStarted
   , realDay       = formatTime defaultTimeLocale "%F" day
   , weekday       = formatTime defaultTimeLocale "%u" day
   , hourOfDay
@@ -41,7 +36,7 @@ elasticPomodoro eod p = ElasticPomodoro
   }
   where
     duration = p ^. #length . to round
-    utc = zonedTimeToUTC zoned
+    utcStarted = zonedTimeToUTC zoned
     zoned = p ^. #started
     day = timeDay eod zoned
     hourOfDay = (realToFrac $ timeOfDayToTime $ localTimeOfDay $ zonedTimeToLocalTime zoned) / 3600

@@ -2,17 +2,13 @@ module Burn.Server.Handler where
 
 import Burn.API
 import Burn.Server.Transform
-import Burn.Statistics
 import Burn.Storage
 import Control.Concurrent.STM
 import Control.Lens
 import Control.Monad.Base
-import Data.Default
 import Data.Foldable
 import Data.Time
-import Data.Vector as V
 import GHC.Generics (Generic)
-import Network.Wai.Handler.Warp (run)
 import Servant
 
 data Payload = Payload
@@ -46,8 +42,8 @@ handleMessage evt p = liftBase $ do
   print evt
   pomodors <- (traversed . traversed) utcToLocalZonedTime
     $ actions ^.. folded . #_SavePomodoro
-  for_ (settings ^. #dataFile) $ \p -> do
-    savePomodoros p pomodors
+  for_ (settings ^. #dataFile) $ \f -> do
+    savePomodoros f pomodors
   return newSt
 
 startPomodoro :: Payload -> Server StartPomodoroAPI

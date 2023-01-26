@@ -1,8 +1,8 @@
+{-# OPTIONS_GHC -Wno-orphans #-}
+
 module Burn.Types where
 
-import Control.Lens
 import Data.Aeson
-import Data.Aeson.TH as J
 import Data.Csv
 import Data.Default
 import Data.Generics.Labels ()
@@ -14,10 +14,12 @@ import GHC.Generics (Generic)
 
 data Notification
   = PomodoroFinished | PauseFinished
-  deriving (Eq, Ord, Show, Generic, ToJSON, FromJSON)
+  deriving stock (Eq, Ord, Show, Generic)
+  deriving anyclass (ToJSON, FromJSON)
 
 newtype Tags = Tags [Text]
-  deriving (Eq, Ord, Show, Generic, FromJSON, ToJSON)
+  deriving stock (Eq, Ord, Show, Generic)
+  deriving anyclass (ToJSON, FromJSON)
 
 instance FromField Tags where
   parseField f = do
@@ -39,7 +41,7 @@ instance FromField UTCTime where
     return $ posixSecondsToUTCTime ndf
 
 instance ToField UTCTime where
-  toField utc = toField $ utcTimeToPOSIXSeconds utc
+  toField = toField . utcTimeToPOSIXSeconds
 
 iso8601 :: String
 iso8601 = iso8601DateFormat $ Just "%H:%M:%S%Q%z"

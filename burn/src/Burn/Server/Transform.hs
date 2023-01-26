@@ -3,31 +3,23 @@ module Burn.Server.Transform where
 import Burn.Types
 import Control.Lens
 import Control.Monad.State.Strict
-import Data.Aeson
-import Data.Aeson.TH
-import Data.Default
 import Data.Foldable
 import Data.List as L
-import Data.Map.Strict (Map)
 import Data.Maybe
-import Data.Monoid
 import Data.Text (Text)
 import Data.Time
-
-import qualified Data.Map.Strict as M
-import qualified Data.Text as T
 
 
 -- | Handles message and transforms state
 process :: TimeOfDay -> TimeZone -> Message -> ServerState -> (ServerState, [Action])
-process dayEnd tz msg state =
+process dayEnd tz msg serverState =
   let
     Message now event = msg
-    settings = processSettings event $ state ^. #settings
-    (burn, actions') = processBurn settings msg (state ^. #tags) (state ^. #burn)
-    tags = processTags msg $ state ^. #tags
-    actions  = splitDaylyActions dayEnd tz (state ^. #lastMsg) now actions'
-    todayPomodoros = processCounted actions $ state ^. #todayPomodoros
+    settings = processSettings event $ serverState ^. #settings
+    (burn, actions') = processBurn settings msg (serverState ^. #tags) (serverState ^. #burn)
+    tags = processTags msg $ serverState ^. #tags
+    actions  = splitDaylyActions dayEnd tz (serverState ^. #lastMsg) now actions'
+    todayPomodoros = processCounted actions $ serverState ^. #todayPomodoros
     newState = ServerState
       { tags
       , todayPomodoros

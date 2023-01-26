@@ -1,12 +1,8 @@
 module Burn.Storage where
 
 import Burn.Types
-import Control.Arrow
-import Control.Lens
 import Data.ByteString.Lazy as BL
 import Data.Csv
-import Data.List as L
-import Data.Map.Strict as M
 import Data.Time
 import Data.Vector (Vector)
 import System.Directory

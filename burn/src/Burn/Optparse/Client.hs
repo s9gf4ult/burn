@@ -3,7 +3,6 @@ module Burn.Optparse.Client where
 import Burn.Optparse.Settings
 import qualified Burn.Types as T
 import Control.Lens
-import Data.Monoid
 import Data.Text
 import Data.Time
 import Data.Traversable
@@ -24,7 +23,7 @@ readCommand t = case T.strip <$> T.words t of
   ["pomodoro"]  -> Right Pomodoro
   ["pause"]     -> Right Pause
   ("tags":tags) -> Right $ SetTags $ T.Tags tags
-  ("set":option) -> SetOption <$> readSetOption option
+  ("set":rest) -> SetOption <$> readSetOption rest
   (x:_)         -> Left $ "unknown command \"" <> T.unpack x <> "\""
   []            -> Left "empty command string"
 

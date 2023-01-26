@@ -2,7 +2,7 @@ module Burn.Cli where
 
 import Burn.API
 import Burn.Client
-import Burn.Optparse as Opt
+import qualified Burn.Optparse as Opt
 import Burn.Server (Payload(..), handlers)
 import Burn.Statistics
 import Burn.Storage
@@ -10,52 +10,44 @@ import Control.Concurrent.STM
 import Control.Exception
 import Control.Lens
 import Control.Monad
-import Control.Monad.Trans
-import Data.Default
 import Data.Foldable
-import Data.List as L
 import Data.Monoid
 import Data.String
-import Data.Text as T
-import Data.Text.IO as T
 import Data.Time
 import Data.Vector as V
-import Formatting
-import Formatting.Time
-import Network.HTTP.Client
 import Network.Wai.Handler.Warp hiding (Settings)
 import Prelude as P
 import Servant.Client
 import Servant.Server
 
-executeCommand :: ClientEnv -> Command -> IO ()
+executeCommand :: ClientEnv -> Opt.Command -> IO ()
 executeCommand env command = do
   void $ either throwIO return =<< case command of
     Opt.Pomodoro -> runClientM startPomodoro env
     Opt.Pause -> runClientM startPause env
-    Opt.SetTags (Tags tags) -> runClientM (setTags tags) env
+    Opt.SetTags (Tags tagsList) -> runClientM (setTags tagsList) env
     Opt.SetOption opt -> runClientM (setOption opt) env
 
 initPayload :: Settings -> IO Payload
-initPayload settings = do
+initPayload initSettings = do
   zt <- getZonedTime
   let
     now = zonedTimeToUTC zt
-    eod = settings ^. #dayEnd
+    eod = initSettings ^. #dayEnd
     day = timeDay eod zt
-  pomodors <- case settings ^. #dataFile of
+  pomodors <- case initSettings ^. #dataFile of
     Just p -> loadPomodors p
     Nothing -> pure mempty
   let
     pMap = splitPomodoros eod $ V.toList pomodors
     todayZoned = pMap ^.. ix day . folded
     todayUtc = over (traversed . #started) zonedTimeToUTC todayZoned
-    state = mkServerState now (toTimerSettings settings)
+    serverState = mkServerState now (toTimerSettings initSettings)
       & #todayPomodoros .~ todayUtc
   print todayZoned
-  Payload <$> newTVarIO state <*> newTVarIO settings
+  Payload <$> newTVarIO serverState <*> newTVarIO initSettings
 
-runBurnServer :: ServerArgs -> IO ()
+runBurnServer :: Opt.ServerArgs -> IO ()
 runBurnServer args = do
   payload <- initPayload $ args ^. #settings
   let
@@ -64,7 +56,7 @@ runBurnServer args = do
     s = defaultSettings & setPort port & setHost host
   runSettings s $ serve burnAPI $ handlers payload
 
-runBurnClient :: ClientArgs -> IO ()
+runBurnClient :: Opt.ClientArgs -> IO ()
 runBurnClient ca = case ca ^. #commands of
   [] -> fail "List of commands must be non empty"
   commands -> do
@@ -87,8 +79,8 @@ runBurnClient ca = case ca ^. #commands of
 --     m t v = maybe "" (sformat (t % hms) . timeToTimeOfDay . realToFrac) v
 
 
-runBurnStats :: StatArgs -> IO ()
-runBurnStats (StatArgs s q) = do
+runBurnStats :: Opt.StatArgs -> IO ()
+runBurnStats (Opt.StatArgs s q) = do
   p <- case s ^. #dataFile of
     Just f -> loadPomodors f
     Nothing -> pure mempty
@@ -111,9 +103,9 @@ runBurnStats (StatArgs s q) = do
 --         when (docId `mod` 100 == 0)
 --           $ P.putStrLn $ "Uploaded " <> show docId <> " documents"
 
-burnCli :: Args -> IO ()
+burnCli :: Opt.Args -> IO ()
 burnCli = \case
-  Server h -> runBurnServer h
-  Client c -> runBurnClient c
-  Statistics s -> runBurnStats s
+  Opt.Server h -> runBurnServer h
+  Opt.Client c -> runBurnClient c
+  Opt.Statistics s -> runBurnStats s
   -- Elastic es -> runElastic es
