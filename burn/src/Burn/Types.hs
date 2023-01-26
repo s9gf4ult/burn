@@ -6,6 +6,7 @@ import Data.Aeson.TH as J
 import Data.Csv
 import Data.Default
 import Data.Generics.Labels ()
+import Data.Generics.Product.Subtype
 import Data.Text as T
 import Data.Time
 import Data.Time.Clock.POSIX
@@ -79,30 +80,60 @@ data Burn
 instance Default Burn where
   def = Waiting
 
+data TimerSettings = TimerSettings
+  { pomodoroLength :: !NominalDiffTime
+  , pauseLength    :: !NominalDiffTime
+  , longPause      :: !NominalDiffTime
+  } deriving (Eq, Ord, Show, Generic, FromJSON, ToJSON)
+
+instance Default TimerSettings where
+  def = TimerSettings
+    { pomodoroLength = 25 * 60
+    , pauseLength    = 5 * 60
+    , longPause      = 30 * 60
+    }
+
+toTimerSettings :: Settings -> TimerSettings
+toTimerSettings = upcast
+
 data ServerState = ServerState
   { tags           :: ![Text]
   , todayPomodoros :: ![PomodoroData UTCTime]
     -- ^ List of today's counted pomodoros
   , burn           :: !Burn
   , lastMsg        :: !UTCTime
+  , settings       :: !TimerSettings
   } deriving (Eq, Ord, Show, Generic, FromJSON, ToJSON)
 
 mkServerState
   :: UTCTime
      -- ^ now
+  -> TimerSettings
   -> ServerState
-mkServerState = ServerState [] [] def
+mkServerState lastMsg settings = ServerState
+  { tags = []
+  , todayPomodoros = []
+  , burn = def
+  , lastMsg
+  , settings
+  }
 
 data Event
   = Tick
   | StartPomodoro
   | StartPause
   | SetTags [Text]
+  | SetOption SetOption
+  deriving (Eq, Ord, Show, Generic)
+
+data SetOption
+  = SetPomodoroLength NominalDiffTime
+  | SetPauseLength NominalDiffTime
   deriving (Eq, Ord, Show, Generic)
 
 data Message = Message
-  { time  :: UTCTime
-  , event :: Event
+  { time  :: !UTCTime
+  , event :: !Event
   } deriving (Eq, Ord, Show, Generic)
 
 data Action

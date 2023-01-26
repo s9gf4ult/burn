@@ -22,7 +22,7 @@ data S = S
   }
 
 instance Default S where
-  def = S now utc (mkServerState now) def def
+  def = S now utc (mkServerState now def) def def
     where
       now = UTCTime (fromGregorian 2020 10 10) 0
 
@@ -59,7 +59,7 @@ send evt = do
   let msg = Message now evt
   s         <- use sSettings
   tz        <- use sTimeZone
-  actions   <- zoom sState $ state $ (snd &&& fst) . process s tz msg
+  actions   <- zoom sState $ state $ (snd &&& fst) . process (s ^. #dayEnd) tz msg
   newServer <- use sState
   notifs    <- zoom sClient $ state $ (snd &&& fst) . updateState now newServer
   return $ (map Left notifs) ++ (map Right actions)

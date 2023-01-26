@@ -19,23 +19,26 @@ import qualified Data.Text as T
 
 
 -- | Handles message and transforms state
-process :: Settings -> TimeZone -> Message -> ServerState -> (ServerState, [Action])
-process s tz msg state =
+process :: TimeOfDay -> TimeZone -> Message -> ServerState -> (ServerState, [Action])
+process dayEnd tz msg state =
   let
-    Message now _ = msg
-    (burn, actions') = processBurn s msg (state ^. #tags) (state ^. #burn)
+    Message now event = msg
+    settings = processSettings event $ state ^. #settings
+    (burn, actions') = processBurn settings msg (state ^. #tags) (state ^. #burn)
     tags = processTags msg $ state ^. #tags
-    actions  = splitDaylyActions s tz (state ^. #lastMsg) now actions'
-    pomodors = processCounted actions $ state ^. #todayPomodoros
+    actions  = splitDaylyActions dayEnd tz (state ^. #lastMsg) now actions'
+    todayPomodoros = processCounted actions $ state ^. #todayPomodoros
     newState = ServerState
-      { tags          = tags
-      , todayPomodoros = pomodors
-      , burn          = burn
-      , lastMsg       = now }
+      { tags
+      , todayPomodoros
+      , burn
+      , lastMsg       = now
+      , settings
+      }
   in (newState, actions)
 
 splitDaylyActions
-  :: Settings
+  :: TimeOfDay
   -> TimeZone
   -> UTCTime
   -- ^ time of previous msg
@@ -43,11 +46,11 @@ splitDaylyActions
   -- ^ now
   -> [Action]
   -> [Action]
-splitDaylyActions s tz prev now actions =
+splitDaylyActions dayEnd tz prev now actions =
   let
     low = min prev $ fromMaybe prev
       $ minimumOf (folded . #_SavePomodoro . #started) actions
-  in case timeBetween tz low now (s ^. #dayEnd) of
+  in case timeBetween tz low now dayEnd of
        Nothing -> actions
        Just de ->
          let pomodors = (actions ^.. folded . #_SavePomodoro) >>= splitPomodoro de
@@ -86,6 +89,12 @@ timeBetween tz prev now dayEnd =
     todsBetween = filter (\tod -> prev < tod && tod <= now) tods
   in maximumOf folded todsBetween
 
+processSettings :: Event -> TimerSettings -> TimerSettings
+processSettings (SetOption o) s = case o of
+  SetPomodoroLength p -> s & #pomodoroLength .~ p
+  SetPauseLength p -> s & #pauseLength .~ p
+processSettings _ s = s
+
 processTags
   :: Message
   -> [Text]
@@ -101,7 +110,7 @@ processCounted actions = execState $ do
     ResetTimers     -> put []
 
 processBurn
-  :: Settings
+  :: TimerSettings
   -> Message
   -> [Text]                     -- ^ Current tags
   -> Burn
@@ -126,18 +135,12 @@ processBurn s (Message now evt) tags burn = case evt of
         pomLen = min (s ^. #pomodoroLength)
           $ stdPom * (passed + (stdPause - c ^. #length)) / stdPause
         newC = Counting
-          { length      = pomLen
-          , started  = now
+          { length  = pomLen
+          , started = now
           }
       in (PomodoroCounting now newC, [])
   StartPause -> case burn of
-    Waiting ->
-      let
-        res = PauseCounting $ Counting
-          { started = now
-          , length = s ^. #pauseLength
-          }
-      in (res, [])
+    Waiting -> (Waiting, [])
     PomodoroCounting lastSaved' c ->
       let
         passed = diffUTCTime now $ c ^. #started

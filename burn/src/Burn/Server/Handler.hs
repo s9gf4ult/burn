@@ -39,7 +39,7 @@ handleMessage evt p = liftBase $ do
     state <- readTVar $ p ^. #state
     settings <- readTVar $ p ^. #settings
     check $ state ^. #lastMsg < now
-    let res@(newSt, _) = process settings tz msg state
+    let res@(newSt, _) = process (settings ^. #dayEnd) tz msg state
     writeTVar (p ^. #state) newSt
     return (settings, res)
   print evt
