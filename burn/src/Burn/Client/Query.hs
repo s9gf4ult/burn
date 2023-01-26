@@ -11,10 +11,12 @@ import           Servant.Client
 startPomodoro :: ClientM ServerState
 startPause    :: ClientM ServerState
 setTags       :: [Text] -> ClientM ServerState
+setOption     :: SetOption -> ClientM ServerState
 status        :: ClientM ServerState
 (startPomodoro
  :<|> startPause
  :<|> setTags
+ :<|> setOption
  :<|> status) = client burnAPI
 
 hostPortClientEnv :: HostPort -> IO ClientEnv

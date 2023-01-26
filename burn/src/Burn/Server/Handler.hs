@@ -25,6 +25,7 @@ handlers p
   =    startPomodoro p
   :<|> startPause p
   :<|> setTags p
+  :<|> setOption p
   :<|> status p
 
 handleMessage
@@ -57,6 +58,9 @@ startPause = handleMessage StartPause
 
 setTags :: Payload -> Server SetTagsAPI
 setTags p tags = handleMessage (SetTags tags) p
+
+setOption :: Payload -> Server SetOptionAPI
+setOption p opt = handleMessage (SetOption opt) p
 
 status :: Payload -> Server TickAPI
 status = handleMessage Tick

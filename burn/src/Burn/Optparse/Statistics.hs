@@ -39,6 +39,7 @@ statQuery = option parseStatistics
       "daily" -> return StatDaily
       "weekly" -> return StatWeekly
       "hourly" -> return StatHourly
+      _ -> fail "Unknown time window"
 
 statArgs :: Parser StatArgs
 statArgs = StatArgs <$> parseSettings <*> statQuery

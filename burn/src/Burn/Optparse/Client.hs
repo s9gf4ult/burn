@@ -1,10 +1,11 @@
 module Burn.Optparse.Client where
 
 import Burn.Optparse.Settings
-import Burn.Types
+import qualified Burn.Types as T
 import Control.Lens
 import Data.Monoid
 import Data.Text
+import Data.Time
 import Data.Traversable
 import GHC.Generics (Generic)
 import Options.Applicative
@@ -12,18 +13,31 @@ import Options.Applicative
 import qualified Data.Text as T
 
 data Command
-  = CPomodoro
-  | CPause
-  | CSetTags Tags
+  = Pomodoro
+  | Pause
+  | SetTags T.Tags
+  | SetOption T.SetOption
   deriving (Eq, Ord, Show)
 
 readCommand :: Text -> Either String Command
 readCommand t = case T.strip <$> T.words t of
-  ["pomodoro"]  -> Right CPomodoro
-  ["pause"]     -> Right CPause
-  ("tags":tags) -> Right $ CSetTags $ Tags tags
+  ["pomodoro"]  -> Right Pomodoro
+  ["pause"]     -> Right Pause
+  ("tags":tags) -> Right $ SetTags $ T.Tags tags
+  ("set":option) -> SetOption <$> readSetOption option
   (x:_)         -> Left $ "unknown command \"" <> T.unpack x <> "\""
   []            -> Left "empty command string"
+
+readSetOption :: [Text] -> Either String T.SetOption
+readSetOption = \case
+  ["pomodoro", len] -> T.SetPomodoroLength <$> readMinutes len
+  ["pause", len] -> T.SetPauseLength <$> readMinutes len
+  _ -> Left "Unknown option to set"
+
+readMinutes :: Text -> Either String NominalDiffTime
+readMinutes t = case t ^? to T.unpack . _Show of
+  Nothing -> Left "Could not read the number"
+  Just n  -> Right $ secondsToNominalDiffTime $ n * 60
 
 parseCommands :: Parser [Command]
 parseCommands = option go m

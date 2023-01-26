@@ -171,3 +171,4 @@ processBurn s (Message now evt) tags burn = case evt of
             , tags = Tags tags }
         in (PomodoroCounting now c, [SavePomodoro pomodoro])
     b -> (b, [])
+  SetOption {} -> (burn, [])

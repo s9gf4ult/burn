@@ -2,7 +2,7 @@ module Burn.Cli where
 
 import Burn.API
 import Burn.Client
-import Burn.Optparse
+import Burn.Optparse as Opt
 import Burn.Server (Payload(..), handlers)
 import Burn.Statistics
 import Burn.Storage
@@ -31,9 +31,10 @@ import Servant.Server
 executeCommand :: ClientEnv -> Command -> IO ()
 executeCommand env command = do
   void $ either throwIO return =<< case command of
-    CPomodoro -> runClientM startPomodoro env
-    CPause -> runClientM startPause env
-    CSetTags (Tags tags) -> runClientM (setTags tags) env
+    Opt.Pomodoro -> runClientM startPomodoro env
+    Opt.Pause -> runClientM startPause env
+    Opt.SetTags (Tags tags) -> runClientM (setTags tags) env
+    Opt.SetOption opt -> runClientM (setOption opt) env
 
 initPayload :: Settings -> IO Payload
 initPayload settings = do

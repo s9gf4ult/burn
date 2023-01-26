@@ -129,7 +129,7 @@ data Event
 data SetOption
   = SetPomodoroLength NominalDiffTime
   | SetPauseLength NominalDiffTime
-  deriving (Eq, Ord, Show, Generic)
+  deriving (Eq, Ord, Show, Generic, FromJSON, ToJSON)
 
 data Message = Message
   { time  :: !UTCTime
