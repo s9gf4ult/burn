@@ -10,11 +10,16 @@ import Control.Concurrent.STM
 import Control.Exception
 import Control.Lens
 import Control.Monad
+import Control.Monad.Trans.Class
 import Data.Foldable
+import qualified Data.List as L
 import Data.Monoid
 import Data.String
+import qualified Data.Text as T
 import Data.Time
 import Data.Vector as V
+import Database.Bloodhound
+import Network.HTTP.Client
 import Network.Wai.Handler.Warp hiding (Settings)
 import Prelude as P
 import Servant.Client
@@ -51,9 +56,9 @@ runBurnServer :: Opt.ServerArgs -> IO ()
 runBurnServer args = do
   payload <- initPayload $ args ^. #settings
   let
-    host = fromString $ args ^. #hostPort . #host
-    port = args ^. #hostPort . #port
-    s = defaultSettings & setPort port & setHost host
+    eHost = fromString $ args ^. #hostPort . #host
+    ePort = args ^. #hostPort . #port
+    s = defaultSettings & setPort ePort & setHost eHost
   runSettings s $ serve burnAPI $ handlers payload
 
 runBurnClient :: Opt.ClientArgs -> IO ()
@@ -64,21 +69,6 @@ runBurnClient ca = case ca ^. #commands of
     for_ commands $ \c -> do
       executeCommand env c
 
--- printStatResult :: StatsResult -> IO ()
--- printStatResult sr = T.putStrLn t
---   where
---     t = day <> ": " <> results
---     day = T.pack $ show $ sr ^. srTime
---     ls = sr ^. srStatData . _SDSummary
---     results
---       = (m " sum: " $ ls ^. sSum . re _Just)
---       <> (m " min: " $ ls ^. sMinLen)
---       <> (m " max: " $ ls ^. sMaxLen)
---       <> (m " median: " $ ls ^. sMedian)
---       <> (sformat (" count: " % shown) $ ls ^. sCount)
---     m t v = maybe "" (sformat (t % hms) . timeToTimeOfDay . realToFrac) v
-
-
 runBurnStats :: Opt.StatArgs -> IO ()
 runBurnStats (Opt.StatArgs s q) = do
   p <- case s ^. #dataFile of
@@ -86,26 +76,25 @@ runBurnStats (Opt.StatArgs s q) = do
     Nothing -> pure mempty
   printStatsQuery (s ^. #dayEnd) q p
 
--- runElastic :: ElasticArgs -> IO ()
--- runElastic es = do
---   p <- loadPomodors $ es ^. esDataFile
---   let ids    = IndexDocumentSettings NoVersionControl Nothing
---       server = es ^. esElasticServer
---   withBH defaultManagerSettings server $ do
+runElastic :: Opt.ElasticArgs -> IO ()
+runElastic es = do
+  p <- loadPomodors $ es ^. #dataFile
+  let server = es ^. #server
+  withBH defaultManagerSettings server $ do
 
---     for_ (L.zip (V.toList p) [0..]) $ \(pomodoro, docId) -> do
---       reply <- indexDocument (es ^. esIndexName) (MappingName "pomodoros") ids
---         (elasticPomodoro (es ^. esDayEnd) pomodoro)
---         (DocId $ T.pack $ show docId)
---       lift $ do
---         unless (isSuccess reply)
---           $ print reply
---         when (docId `mod` 100 == 0)
---           $ P.putStrLn $ "Uploaded " <> show docId <> " documents"
+    for_ (L.zip (V.toList p) [0::Integer .. ]) $ \(pomodoro, docId) -> do
+      reply <- indexDocument (es ^. #indexName) defaultIndexDocumentSettings
+        (Opt.elasticPomodoro (es ^. #dayEnd) pomodoro)
+        (DocId $ T.pack $ show docId)
+      lift $ do
+        unless (isSuccess reply)
+          $ print reply
+        when (docId `mod` 100 == 0)
+          $ P.putStrLn $ "Uploaded " <> show docId <> " documents"
 
 burnCli :: Opt.Args -> IO ()
 burnCli = \case
   Opt.Server h -> runBurnServer h
   Opt.Client c -> runBurnClient c
   Opt.Statistics s -> runBurnStats s
-  -- Elastic es -> runElastic es
+  Opt.Elastic es -> runElastic es

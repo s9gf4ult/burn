@@ -1,6 +1,7 @@
 module Burn.Optparse.Elastic where
 
 import Burn.Statistics.Functions
+import Database.Bloodhound.Types
 import Burn.Types
 import Control.Lens
 import Data.Aeson
@@ -41,14 +42,12 @@ elasticPomodoro eod p = ElasticPomodoro
     day = timeDay eod zoned
     hourOfDay = (realToFrac $ timeOfDayToTime $ localTimeOfDay $ zonedTimeToLocalTime zoned) / 3600
 
--- data ElasticArgs = ElasticArgs
---   { _esDataFile      :: FilePath
---   , _esElasticServer :: Server
---   , _esIndexName     :: IndexName
---   , _esDayEnd        :: TimeOfDay
---   } deriving (Eq, Show)
-
--- makeLenses ''ElasticArgs
+data ElasticArgs = ElasticArgs
+  { dataFile  :: FilePath
+  , server    :: Server
+  , indexName :: IndexName
+  , dayEnd    :: TimeOfDay
+  } deriving (Eq, Show, Generic)
 
 -- elasticArgs :: Parser ElasticArgs
 -- elasticArgs = ElasticArgs

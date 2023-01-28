@@ -23,6 +23,7 @@ library
                -Werror=name-shadowing
   exposed-modules: Burn.Cli
   build-depends: base >= 4.6 && <= 5
+               , bloodhound
                , burn
                , data-default
                , formatting
@@ -35,6 +36,7 @@ library
                , stm
                , text
                , time
+               , transformers
                , vector
                , warp
   default-extensions: DataKinds
