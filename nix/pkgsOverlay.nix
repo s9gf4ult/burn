@@ -38,4 +38,4 @@ let
     inherit display-flipper ;
   };
 in if attr == null
-then set else { ${attr} = set; }
+then set else { ${attr} = (super.${attr} or {}) // set; }
