@@ -50,6 +50,7 @@ splitDaylyActions dayEnd tz prev now actions =
              (a, b) = break f pomodors
          in map SavePomodoro a ++ [ResetTimers] ++ map SavePomodoro b
 
+-- | Splits pomodoro if it crosses the day end
 splitPomodoro :: UTCTime -> PomodoroData UTCTime -> [PomodoroData UTCTime]
 splitPomodoro de pd =
   let
@@ -64,6 +65,8 @@ splitPomodoro de pd =
       | otherwise -> [pd]
   in result
 
+-- | Returns @Just dayEnd@ if the day end is between previous message's time and
+-- now. Considering timezone and time of day settings.
 timeBetween
   :: TimeZone
   -> UTCTime
