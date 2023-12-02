@@ -3,8 +3,8 @@
 }:
 mkDerivation {
   pname = "gtk3";
-  version = "0.15.7";
-  sha256 = "44a64058f6e5223c1bde0964b2db37596b30d4680d0bfff547fe43516abd0f39";
+  version = "0.15.8";
+  sha256 = "d59dd85a6be6a39d96c0e2a68603dbb60a12d8145be6fd2fac51b6340417f407";
   isLibrary = true;
   isExecutable = true;
   enableSeparateDataOutput = true;

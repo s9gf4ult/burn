@@ -3,8 +3,8 @@
 }:
 mkDerivation {
   pname = "gio";
-  version = "0.13.8.2";
-  sha256 = "b3f5ad488523a5569f410eda582a265c5d7331eee26cd116aada0c68d08100ba";
+  version = "0.13.10.0";
+  sha256 = "a831497e77a37d7076a5d6fd8a48af1c03b1b6710d2ee5f3f94e0e577cf68a53";
   enableSeparateDataOutput = true;
   setupHaskellDepends = [ base Cabal gtk2hs-buildtools ];
   libraryHaskellDepends = [

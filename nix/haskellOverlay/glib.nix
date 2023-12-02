@@ -3,8 +3,8 @@
 }:
 mkDerivation {
   pname = "glib";
-  version = "0.13.8.2";
-  sha256 = "86b4bdc832079b6411387a28f0c0bdef3fbe7911a223b8be5257f43bfbac0a27";
+  version = "0.13.10.0";
+  sha256 = "a19e12ab3b86bf5ced5ec30e6bc0618f1ac863d5511000a6da73a3ddda183e91";
   setupHaskellDepends = [ base Cabal gtk2hs-buildtools ];
   libraryHaskellDepends = [
     base bytestring containers text utf8-string

@@ -4,8 +4,8 @@
 }:
 mkDerivation {
   pname = "pango";
-  version = "0.13.8.2";
-  sha256 = "85530fa057b227d5975e2f6faefe1d1c0b8e3b4dd71659d7c5936e02d262cdd6";
+  version = "0.13.10.0";
+  sha256 = "5d850591e68267dd3545e4f4e67717f89c68f3953552d0bcdf111f20370ab361";
   enableSeparateDataOutput = true;
   setupHaskellDepends = [ base Cabal filepath gtk2hs-buildtools ];
   libraryHaskellDepends = [

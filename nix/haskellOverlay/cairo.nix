@@ -3,8 +3,8 @@
 }:
 mkDerivation {
   pname = "cairo";
-  version = "0.13.8.2";
-  sha256 = "d40b060d1104715b1cd1deaade9e43aa7ca24a31c78260bc5d76a7327c8d02eb";
+  version = "0.13.10.0";
+  sha256 = "ae0218c827c83d419dd01851aa55efd904fb1a879b5d3cee6f62e2871e96bc99";
   enableSeparateDataOutput = true;
   setupHaskellDepends = [ base Cabal gtk2hs-buildtools ];
   libraryHaskellDepends = [
